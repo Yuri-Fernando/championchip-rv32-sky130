@@ -1,0 +1,48 @@
+num,categoria,instrucao,testbench,status,evidencia
+1,ALU reg,ADD,tb_isa_alu.sv,PASS,docs/evidence/logs/regression_latest.log
+2,ALU reg,SUB,tb_isa_alu.sv,PASS,docs/evidence/logs/regression_latest.log
+3,ALU reg,SLL,tb_isa_alu.sv,PASS,docs/evidence/logs/regression_latest.log
+4,ALU reg,SLT,tb_isa_alu.sv,PASS,docs/evidence/logs/regression_latest.log
+5,ALU reg,SLTU,tb_isa_alu.sv,PASS,docs/evidence/logs/regression_latest.log
+6,ALU reg,XOR,tb_isa_alu.sv,PASS,docs/evidence/logs/regression_latest.log
+7,ALU reg,SRL,tb_isa_alu.sv,PASS,docs/evidence/logs/regression_latest.log
+8,ALU reg,SRA,tb_isa_alu.sv,PASS,docs/evidence/logs/regression_latest.log
+9,ALU reg,OR,tb_isa_alu.sv,PASS,docs/evidence/logs/regression_latest.log
+10,ALU reg,AND,tb_isa_alu.sv,PASS,docs/evidence/logs/regression_latest.log
+11,ALU imm,ADDI,tb_isa_alu.sv,PASS,docs/evidence/logs/regression_latest.log
+12,ALU imm,SLTI,tb_isa_alu.sv,PASS,docs/evidence/logs/regression_latest.log
+13,ALU imm,SLTIU,tb_isa_alu.sv,PASS,docs/evidence/logs/regression_latest.log
+14,ALU imm,XORI,tb_isa_alu.sv,PASS,docs/evidence/logs/regression_latest.log
+15,ALU imm,ORI,tb_isa_alu.sv,PASS,docs/evidence/logs/regression_latest.log
+16,ALU imm,ANDI,tb_isa_alu.sv,PASS,docs/evidence/logs/regression_latest.log
+17,ALU imm,SLLI,tb_isa_alu.sv,PASS,docs/evidence/logs/regression_latest.log
+18,ALU imm,SRLI,tb_isa_alu.sv,PASS,docs/evidence/logs/regression_latest.log
+19,ALU imm,SRAI,tb_isa_alu.sv,PASS,docs/evidence/logs/regression_latest.log
+20,Load,LB,tb_isa_mem_upper_sys.sv,PASS,docs/evidence/logs/regression_latest.log
+21,Load,LH,tb_isa_mem_upper_sys.sv,PASS,docs/evidence/logs/regression_latest.log
+22,Load,LW,tb_isa_mem_upper_sys.sv,PASS,docs/evidence/logs/regression_latest.log
+23,Load,LBU,tb_isa_mem_upper_sys.sv,PASS,docs/evidence/logs/regression_latest.log
+24,Load,LHU,tb_isa_mem_upper_sys.sv,PASS,docs/evidence/logs/regression_latest.log
+25,Store,SB,tb_isa_mem_upper_sys.sv,PASS,docs/evidence/logs/regression_latest.log
+26,Store,SH,tb_isa_mem_upper_sys.sv,PASS,docs/evidence/logs/regression_latest.log
+27,Store,SW,tb_isa_mem_upper_sys.sv,PASS,docs/evidence/logs/regression_latest.log
+28,Branch,BEQ,tb_isa_branch_jump.sv,PASS,docs/evidence/logs/regression_latest.log
+29,Branch,BNE,tb_isa_branch_jump.sv,PASS,docs/evidence/logs/regression_latest.log
+30,Branch,BLT,tb_isa_branch_jump.sv,PASS,docs/evidence/logs/regression_latest.log
+31,Branch,BGE,tb_isa_branch_jump.sv,PASS,docs/evidence/logs/regression_latest.log
+32,Branch,BLTU,tb_isa_branch_jump.sv,PASS,docs/evidence/logs/regression_latest.log
+33,Branch,BGEU,tb_isa_branch_jump.sv,PASS,docs/evidence/logs/regression_latest.log
+34,Jump,JAL,tb_isa_branch_jump.sv,PASS,docs/evidence/logs/regression_latest.log
+35,Jump,JALR,tb_isa_branch_jump.sv,PASS,docs/evidence/logs/regression_latest.log
+36,Upper imm,LUI,tb_isa_mem_upper_sys.sv,PASS,docs/evidence/logs/regression_latest.log
+37,Upper imm,AUIPC,tb_isa_mem_upper_sys.sv,PASS,docs/evidence/logs/regression_latest.log
+38,Sistema/sinc,FENCE,tb_isa_mem_upper_sys.sv,PASS (no-op verificado),docs/evidence/logs/regression_latest.log
+39,Sistema/sinc,ECALL,tb_isa_mem_upper_sys.sv,PASS (halt_o),docs/evidence/logs/regression_latest.log
+40,Sistema/sinc,EBREAK,"tb_isa_alu.sv, tb_isa_branch_jump.sv, tb_isa_zmmul.sv",PASS (halt_o),docs/evidence/logs/regression_latest.log
+41,Zmmul,MUL,tb_isa_zmmul.sv,PASS,docs/evidence/logs/regression_latest.log
+42,Zmmul,MULH,tb_isa_zmmul.sv,PASS,docs/evidence/logs/regression_latest.log
+43,Zmmul,MULHSU,tb_isa_zmmul.sv,PASS,docs/evidence/logs/regression_latest.log
+44,Zmmul,MULHU,tb_isa_zmmul.sv,PASS,docs/evidence/logs/regression_latest.log
+45,Xicrc,CRCB,tb_crc_unit.sv,BLOCKED-XICRC (estrutural apenas; sem oraculo oficial),docs/evidence/logs/regression_latest.log
+46,Xicrc,CRCH,tb_crc_unit.sv,BLOCKED-XICRC (estrutural apenas; sem oraculo oficial),docs/evidence/logs/regression_latest.log
+47,Xicrc,CRCW,tb_crc_unit.sv,BLOCKED-XICRC (estrutural apenas; sem oraculo oficial),docs/evidence/logs/regression_latest.log

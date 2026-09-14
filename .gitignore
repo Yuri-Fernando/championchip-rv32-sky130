@@ -1,0 +1,18 @@
+# Build/simulacao
+firmware/build/*
+!firmware/build/.gitkeep
+*.vvp
+*.vcd
+*.fst
+
+# OpenLane
+openlane/runs/
+!openlane/runs/.gitkeep
+
+# SO/editor
+.DS_Store
+Thumbs.db
+*.swp
+
+# Mirror local (fora do repo, mas por seguranca)
+/tmp_mirror/

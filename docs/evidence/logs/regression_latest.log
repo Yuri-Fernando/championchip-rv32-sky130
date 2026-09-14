@@ -1,0 +1,16 @@
+Sincronizado: projeto -> /c/tmp/championchip-build
+==== UNIT TESTS ====
+PASS  tb_alu
+PASS  tb_regfile
+PASS  tb_imm_gen
+PASS  tb_branch_cmp
+PASS  tb_mult_unit
+PASS  tb_lsu
+PASS  tb_address_decoder
+PASS  tb_crc_unit
+==== ISA TESTS ====
+PASS  tb_isa_alu
+PASS  tb_isa_mem_upper_sys
+PASS  tb_isa_branch_jump
+PASS  tb_isa_zmmul
+REGRESSION EXIT CODE: 0
