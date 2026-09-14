@@ -75,6 +75,25 @@ regfile é combinacional, `rs1_rdata`/`rs2_rdata` permanecem estáveis
 automaticamente. Registrar A/B adicionaria registradores sem ganho de
 correção (economia de área, princípio P1).
 
+## ADR-008 — Alvo do OpenLane baseline: `rv32_core` (núcleo puro), não `chip_top`
+
+**Decisão:** a primeira rodada OpenLane (F7) sintetiza `rv32_core`
+diretamente (regfile+ALU+decode+FSM+unidades, sem IMEM/DMEM anexadas), em
+vez de `chip_top`/`soc_top`.
+**Razão:** os modelos de IMEM/DMEM em `rtl/memory/` são comportamentais
+(arrays com `$readmemh`/loop de inicialização) especificamente para
+simulação — sintetizá-los literalmente geraria uma ROM/SRAM absurda em
+flip-flops (até 4 MB para a IMEM), o que o próprio Plano Mestre proíbe
+explicitamente (risco R-02). A estratégia de memória física real depende do
+macro/template que a organização ainda não disponibilizou (SPEC_GAPS.md
+SG-02). Sintetizar o núcleo isoladamente ainda produz uma métrica de
+área/timing/densidade genuína e útil (é o bloco logicamente mais complexo),
+sem contaminar o resultado com uma memória fisicamente irreal.
+**Consequência:** criado `rtl/top/chip_top_min.sv` como variante mínima do
+top físico (somente clk_i/rst_i) para quando a memória física estiver
+definida; `chip_top.sv` completo (com pinos GPIO/serial reservados)
+permanece como destino final pós-SG-03.
+
 ## ADR-007 — Ambiente de verificação containerizado (Docker) + mirror local
 
 **Decisão:** toda a toolchain de simulação (Icarus Verilog, Verilator,
