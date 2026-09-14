@@ -1,0 +1,5 @@
+WARNING: rtl/memory/imem.sv:32: $readmemh(firmware/build/smoke_test.hex): Not enough words in the file for the requested range [0:4095].
+[INFO] result_sig=600dc0de testnum=9 pc_final=0040018c
+[ pass ] firmware smoke-test PASS (9 blocos)
+=== tb_firmware_smoke: PASS ===
+tb/firmware/tb_firmware_smoke.sv:60: $finish called at 3510 (1s)

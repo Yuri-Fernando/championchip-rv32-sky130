@@ -34,8 +34,23 @@ testes que passam e o commit/tag correspondente.
 44/47 instruções fechadas (RV32I 40/40 + Zmmul 4/4). Xicrc (3/47)
 BLOCKED-XICRC — ver SPEC_GAPS.md SG-01.
 
+## [v0.5-firmware-smoke]
+
+### Adicionado
+- F6 (parcial — firmware oficial indisponível, ver SG-05): firmware de
+  smoke-test autoral (`firmware/smoke/smoke_test.S`), compilado com
+  `riscv64-unknown-elf-gcc -march=rv32im -mabi=ilp32` (sem compressed),
+  linkado contra `firmware/linker/link.ld` (mapa de memória real do core),
+  convertido para hex e simulado sobre `soc_top` via
+  `tb/firmware/tb_firmware_smoke.sv`.
+- **Resultado: PASS (9/9 blocos)** — cadeia toolchain → ELF → hex →
+  simulação → execução end-to-end comprovada com ferramentas reais (não
+  apenas testes dirigidos hand-encoded). Cobre ADD/SUB, lógica, shifts,
+  SLT/SLTU, LUI/AUIPC, load/store (word/byte/half, sign/zero-extend),
+  branch, JAL/JALR e MUL/MULH (Zmmul).
+- `scripts/build_firmware.sh` e `scripts/run_firmware_sim.sh`.
+
 ### Pendente
-- F6: firmware oficial (indisponível neste repositório — SPEC_GAPS.md
-  SG-05); firmware de smoke-test autoral em preparação.
+- F6 completo: depende do firmware oficial da competição (SG-05).
 - F7-F9: fluxo OpenLane/SKY130 (baseline, otimização, gate-level regression).
 - F10: relatório final, vídeo, pacote de submissão.
