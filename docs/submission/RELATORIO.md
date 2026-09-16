@@ -115,9 +115,30 @@ clock relaxado (40 ns) e utilização de core 35% na primeira rodada,
 priorizando robustez/completude do fluxo sobre recorde de área (seção 10.1
 do Plano Mestre).
 
-Ver seção 7 do notebook [`docs/ChampionCHIP_EndToEnd.ipynb`](../ChampionCHIP_EndToEnd.ipynb)
-para o status mais atual desta etapa (área, densidade, WNS/TNS, DRC) — em
-andamento/pendente no momento deste relatório, ver `CHANGELOG.md`.
+**Resultado (fluxo completo, `sky130A`/`sky130_fd_sc_hd`, clock 40 ns / 25 MHz):**
+
+| Métrica | Valor |
+|---------|-------|
+| DRC (KLayout) | **0 erros** |
+| DRC (Magic) | **0 erros** |
+| LVS | **0 erros/diferenças** (device, net, pin, property) |
+| Timing WNS/TNS (10 corners, setup+hold) | **0 / 0** em todos |
+| Área do core | 653 656 µm² |
+| Área do die | 681 917 µm² (≈0,68 mm², 820,4 × 831,2 µm) |
+| Roteamento | convergiu em 6 iterações (12 220 → 0 erros de DRC de rota) |
+| Antenna | 2 nets/pins com violação residual |
+| Max slew/cap | violações nos corners de processo lento (SS 100C 1.60V) — alvo de otimização F8 |
+
+Artefatos completos em [`docs/evidence/openlane/run_best/`](../evidence/openlane/run_best/):
+`rv32_core.gds` (GDSII final), `rv32_core.nl.v` (netlist gate-level),
+`metrics.json`, `config.json` e uma imagem renderizada do layout
+(`rv32_core_layout.png`).
+
+O clock relaxado (40 ns) fechou timing com folga em todos os corners —
+próximo passo natural (F8) é o sweep de `CLOCK_PERIOD`/`FP_CORE_UTIL`
+descrito na seção 10.2 do Plano Mestre, buscando a fronteira de frequência
+sem introduzir congestionamento, e endereçar os slew/cap violations do
+corner mais pessimista.
 
 ---
 

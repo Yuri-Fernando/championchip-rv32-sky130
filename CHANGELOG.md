@@ -52,5 +52,40 @@ BLOCKED-XICRC — ver SPEC_GAPS.md SG-01.
 
 ### Pendente
 - F6 completo: depende do firmware oficial da competição (SG-05).
-- F7-F9: fluxo OpenLane/SKY130 (baseline, otimização, gate-level regression).
+- F8/F9: otimização física (sweep) e gate-level regression.
 - F10: relatório final, vídeo, pacote de submissão.
+
+## [v0.7-openlane-baseline]
+
+### Adicionado
+- F7 — **OpenLane baseline COMPLETO com sucesso**, alvo `rv32_core`, PDK
+  `sky130A` / `sky130_fd_sc_hd`, clock 40 ns (25 MHz).
+  - **DRC: 0 erros** (KLayout e Magic).
+  - **LVS: 0 erros/diferenças** (device, net, pin, property — todos zero).
+  - **Timing fechado em TODOS os 10 corners**: WNS = TNS = 0 (setup e hold).
+  - Área do core: 653 656 µm² · área die: 681 917 µm² (≈0,68 mm², 820×831 µm).
+  - Roteamento convergiu em 6 iterações (12 220 → 0 erros de DRC de rota).
+  - Antenna: 2 nets/pins com violação residual (pendente de repair fino).
+  - Max slew/max cap: violações presentes nos corners de processo lento
+    (SS 100C 1.60V) — esperado numa rodada baseline sem otimização de
+    buffer insertion; alvo de F8.
+  - Artefatos: `rv32_core.gds` (GDSII), `rv32_core.nl.v` (netlist
+    gate-level), `metrics.json`, imagem do layout renderizada via KLayout —
+    todos em `docs/evidence/openlane/run_best/`.
+- Imagem de desenvolvimento (`championchip-dev`) passou a incluir Yosys,
+  `python3-tk` e o pacote `openlane` (pip), permitindo rodar o fluxo
+  RTL-to-GDSII inteiramente dentro do mesmo container usado para
+  simulação/firmware (ver DECISIONS.md ADR-010/011).
+- `openlane/constraints/base.sdc` corrigido (comando Tcl inválido
+  `remove_from_collection`, não suportado pelo interpretador do OpenROAD).
+
+### Corrigido (troubleshooting de ambiente, não de RTL)
+- OpenLane 2 (pip) não roda no Python nativo do Windows (`signal.SIGKILL`
+  ausente) — ver ADR-009.
+- WSL sem `sudo`/`python3-tk` impedia rodar `openlane` nativamente ali —
+  contornado rodando dentro do container `championchip-dev` com o
+  `docker.sock` do host montado (Docker-in-Docker via socket) — ADR-010.
+- Path mismatch em containers aninhados (`-v $PWD:$PWD` resolvido pelo
+  daemon real, não pelo container que pediu o mount) — contornado usando
+  o path espelhado `/mnt/c/tmp/championchip-build` em todos os níveis,
+  disparado a partir do WSL — ADR-011.

@@ -19,9 +19,9 @@ protocolo de execução completos). Guia oficial da competição:
 | F3 | FSM + core integrado | ✅ |
 | F4 | RV32I 40/40 | ✅ |
 | F5 | Zmmul 4/4 + Xicrc 3/3 | ✅ Zmmul / 🔴 Xicrc BLOCKED (SPEC_GAPS.md SG-01) |
-| F6 | Firmware oficial | 🔴 indisponível (SPEC_GAPS.md SG-05); smoke-test autoral em `firmware/smoke/` |
-| F7 | OpenLane baseline | ⏳ |
-| F8 | Otimização física | ⏳ |
+| F6 | Firmware oficial | 🔴 indisponível (SPEC_GAPS.md SG-05); smoke-test autoral em `firmware/smoke/` PASS (9/9) |
+| F7 | OpenLane baseline | ✅ DRC 0, LVS 0, WNS/TNS 0 (10 corners), GDSII gerado (0,68 mm²) |
+| F8 | Otimização física | ⏳ (baseline já fecha timing; corner lento tem slew/cap a otimizar) |
 | F9 | Gate-level regression | ⏳ |
 | F10 | Relatório/vídeo/submissão | ⏳ |
 

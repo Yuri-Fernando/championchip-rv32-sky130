@@ -94,6 +94,55 @@ top físico (somente clk_i/rst_i) para quando a memória física estiver
 definida; `chip_top.sv` completo (com pinos GPIO/serial reservados)
 permanece como destino final pós-SG-03.
 
+## ADR-009 — OpenLane 2 não roda no Python nativo do Windows (histórico)
+
+Tentativa inicial: `pip install openlane` num venv Python nativo do
+Windows. **Falhou**: o pacote importa `signal.SIGKILL` (POSIX-only) em
+`openlane.steps.magic`, inexistente no Python do Windows.
+
+## ADR-010 — OpenLane 2 executado dentro do container `championchip-dev`, com o docker.sock do host montado (Docker-in-Docker)
+
+**Contexto:** após ADR-009, a alternativa óbvia era o WSL (Ubuntu), que tem
+um Python Linux real. Mas o WSL desta máquina não tem `sudo` com senha
+configurada, e o pacote `openlane` precisa de `tkinter` (usado
+internamente para parsing Tcl), que depende de bibliotecas nativas
+(`python3-tk`) só instaláveis via `apt` — ou seja, precisa de root.
+
+**Decisão final:** instalar `python3-tk`, `docker.io` (CLI) e o pacote pip
+`openlane` diretamente na imagem `championchip-dev` (`tools/docker/
+Dockerfile`), já que dentro do `Dockerfile` a instalação roda como root
+sem precisar de senha. Para o `openlane` conseguir orquestrar os
+containers de síntese/PnR/STA que ele mesmo lança, o container
+`championchip-dev` é executado com o socket do Docker do host montado
+(`-v /var/run/docker.sock:/var/run/docker.sock`) — padrão
+"Docker-in-Docker via socket compartilhado", sem precisar de um daemon
+Docker aninhado de verdade.
+**Consequência:** um único ambiente (`championchip-dev`) cobre simulação
+RTL, firmware e agora também o fluxo físico, mantendo o princípio de
+"tudo containerizado, nada instalado solto no host" (ver ADR-007).
+
+## ADR-011 — Path espelhado `/mnt/c/...` disparado a partir do WSL para resolver Docker-outside-of-Docker
+
+**Contexto:** com `--dockerized`, o `openlane` (rodando dentro do
+container `championchip-dev`) lança ele mesmo containers auxiliares via
+`docker.sock` compartilhado, pedindo bind mounts como `-v $PWD:$PWD`. Esse
+pedido é resolvido pelo DAEMON real (a VM do Docker Desktop), não pelo
+container que fez a chamada — então `$PWD` precisa ser um path que o
+DAEMON reconheça, nao um path interno arbitrário do container "de fora".
+**Tentativas que falharam:** montar em `/work` (o daemon não tem essa
+pasta); montar em `/mnt/c/tmp/championchip-build` quando o `docker run`
+externo é disparado do Windows/Git Bash (o cliente Windows não traduz
+esse formato de path para o daemon).
+**Solução:** disparar a cadeia INTEIRA (`docker run` do container
+`championchip-dev` incluído) a partir de dentro do WSL (Ubuntu), montando
+`/mnt/c/tmp/championchip-build` no MESMO path em todos os níveis. A partir
+do WSL, o daemon do Docker Desktop resolve esse path corretamente (o WSL2
+integra o mesmo `/mnt/c` que a VM interna do Docker Desktop usa), então
+o path permanece válido mesmo quando um container aninhado pede o mesmo
+mount novamente.
+**Resultado:** `scripts/run_openlane.sh` chama `wsl -d Ubuntu -- bash -lc
+"docker run ..."` em vez de rodar o `docker run` direto do Git Bash.
+
 ## ADR-007 — Ambiente de verificação containerizado (Docker) + mirror local
 
 **Decisão:** toda a toolchain de simulação (Icarus Verilog, Verilator,

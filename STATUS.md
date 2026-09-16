@@ -25,8 +25,10 @@ de execução do Plano Mestre.
   TEST_MATRIX.csv.
 - Notebook Jupyter de ponta a ponta (`docs/ChampionCHIP_EndToEnd.ipynb`),
   reexecutável, reproduzindo todo o pipeline com saídas reais.
-- Configuração OpenLane preparada (`openlane/config/config.json`,
-  constraints SDC) visando `rv32_core` como alvo do baseline (ADR-008).
+- **F7 — OpenLane baseline COMPLETO com sucesso**: DRC 0 erros, LVS 0
+  erros, timing fechado (WNS=TNS=0 em 10 corners), GDSII gerado
+  (`rv32_core.gds`, die 820×831 µm ≈0,68 mm²). Ver
+  `docs/evidence/openlane/run_best/` e `CHANGELOG.md` v0.7.
 
 ## Testes (evidência real, não simulada)
 
@@ -36,7 +38,8 @@ de execução do Plano Mestre.
 ## Métricas
 
 - ISA: **44/47** instruções fechadas (RV32I 40/40 + Zmmul 4/4).
-- Área/densidade/timing físicos: pendentes (ver seção OpenLane abaixo).
+- Físico (`rv32_core`, sky130_fd_sc_hd, 25 MHz): DRC 0, LVS 0, WNS/TNS 0
+  em 10 corners, die 0,68 mm². Ver CHANGELOG v0.7 para a tabela completa.
 
 ## Pendências / Blockers
 
@@ -47,24 +50,32 @@ de execução do Plano Mestre.
    de memória física oficial (IMEM até 4 MB / DMEM 8 kB) não disponível.
 3. **SG-05 (bloqueante para R7 do guia):** firmware oficial da competição
    não está neste repositório.
-4. **OpenLane baseline (F7):** instalação do OpenLane 2 e/ou a rodada
-   completa RTL-to-GDSII pode não ter terminado dentro desta sessão — ver
-   `docs/evidence/logs/openlane_baseline.log` e a seção 7 do notebook para
-   o status mais atual. Rodar `bash scripts/run_openlane.sh` para
-   completar/reexecutar (primeira execução baixa o PDK SKY130 via volare,
-   pode levar bastante tempo).
+4. **F8 (otimização física):** o baseline fechou timing com folga (clock
+   relaxado, 40 ns); o corner de processo lento (SS 100C 1.60V) ainda tem
+   violações de max slew/max cap e 2 antenna violations residuais — sweep
+   de `CLOCK_PERIOD`/`FP_CORE_UTIL`/antenna-repair fica para uma próxima
+   rodada (não bloqueia a submissão do baseline em si).
+5. **F9 (gate-level regression):** simular `rv32_core.nl.v` (netlist
+   gate-level gerada) contra os mesmos testbenches de ISA/firmware para
+   detectar divergência RTL vs GL pós-síntese — ainda não executado.
 
 ## Próximo comando exato
 
 ```bash
-# 1) Se o OpenLane ainda nao rodou ate o fim:
+# 1) Gate-level regression (F9) - simular a netlist pos-sintese:
+#    adaptar tb/isa/*.sv e tb/firmware/tb_firmware_smoke.sv para
+#    instanciar rv32_core.nl.v (docs/evidence/openlane/run_best/) com as
+#    primitivas sky130_fd_sc_hd, em vez do RTL comportamental.
+
+# 2) Sweep de otimizacao fisica (F8), reduzindo CLOCK_PERIOD/FP_CORE_UTIL
+#    a partir de openlane/config/config.json (baseline atual: 40ns/35%):
 bash scripts/run_openlane.sh
 
-# 2) Depois, reexecutar o notebook para embutir os resultados fisicos:
+# 3) Reexecutar o notebook para embutir novos resultados:
 python -m jupyter nbconvert --to notebook --execute --inplace \
   docs/ChampionCHIP_EndToEnd.ipynb
 
-# 3) Quando o material oficial da competicao (repo/template/firmware/spec
+# 4) Quando o material oficial da competicao (repo/template/firmware/spec
 #    Xicrc) chegar, comparar arquivo por arquivo com este RTL e atualizar
 #    SPEC_GAPS.md / DECISIONS.md / TEST_MATRIX.csv conforme cada gap fechar.
 ```

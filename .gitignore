@@ -5,9 +5,15 @@ firmware/build/*
 *.vcd
 *.fst
 
-# OpenLane
+# OpenLane - runs completos e binarios pesados de layout NAO sao versionados
+# (dezenas de MB a GB); reproduziveis via `bash scripts/run_openlane.sh`.
+# Evidencia versionada: metrics.json, config.json e a imagem PNG do layout
+# em docs/evidence/openlane/run_best/.
 openlane/runs/
 !openlane/runs/.gitkeep
+docs/evidence/openlane/run_best/*.gds
+docs/evidence/openlane/run_best/*.nl.v
+docs/evidence/openlane/run_best/*.gl.v
 
 # SO/editor
 .DS_Store

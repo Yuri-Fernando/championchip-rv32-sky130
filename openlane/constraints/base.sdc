@@ -5,5 +5,5 @@
 # (secao 10.1 do Plano Mestre - "meta e robustez e completude do flow").
 # =============================================================================
 create_clock [get_ports clk_i] -name clk_i -period 40
-set_input_delay 4 -clock clk_i [remove_from_collection [all_inputs] [get_ports clk_i]]
+set_input_delay 4 -clock clk_i [all_inputs]
 set_output_delay 4 -clock clk_i [all_outputs]
