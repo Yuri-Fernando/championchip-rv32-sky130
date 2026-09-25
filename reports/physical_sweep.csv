@@ -1,3 +1,4 @@
 label,clock_period_ns,clock_mhz,setup_worst_slack_ns,fmax_mhz_worst_corner,drc_klayout,drc_magic,lvs_errors,antenna_violations,max_slew_violations,max_cap_violations,core_area_um2,stdcell_area_um2,utilization,power_total_w,wirelength_um
 baseline,40.0,25.0,11.568808460876683,35.2,0,0,0,2,7486,143,653656,259760,0.397396,0.03192472830414772,999105
 opt30,30.0,33.3,1.1448264882345778,34.7,0,0,0,2,7620,140,653656,259752,0.397383,0.04264897108078003,998369
+final,30.0,33.3,1.1448264882345778,34.7,0,0,0,2,7620,140,653656,259752,0.397383,0.04264897108078003,998369

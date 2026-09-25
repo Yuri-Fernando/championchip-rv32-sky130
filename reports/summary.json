@@ -847,6 +847,77 @@
         "GRT_ANTENNA_ITERS": 5,
         "FALLBACK_SDC_FILE": "dir::../constraints/base.sdc"
       }
+    },
+    {
+      "label": "final",
+      "dir": "docs/evidence/openlane/run_final",
+      "clock_period_ns": 30.0,
+      "clock_mhz": 33.3,
+      "fmax_mhz_worst_corner": 34.7,
+      "setup_worst_slack_ns": 1.1448264882345778,
+      "setup_ws_by_corner": {
+        "nom_tt_025C_1v80": 15.298527322422876,
+        "min_tt_025C_1v80": 15.750849959016115,
+        "max_tt_025C_1v80": 14.89829457526141,
+        "nom_ss_100C_1v60": 1.9713191637044991,
+        "min_ss_100C_1v60": 2.799220490187904,
+        "max_ss_100C_1v60": 1.1448264882345778,
+        "nom_ff_n40C_1v95": 20.73210994894195,
+        "min_ff_n40C_1v95": 21.020355828709903,
+        "max_ff_n40C_1v95": 20.491221743851778
+      },
+      "hold_worst_slack_ns": 0.2831624459501783,
+      "setup_tns": 0,
+      "hold_tns": 0,
+      "drc_klayout": 0,
+      "drc_magic": 0,
+      "lvs_errors": 0,
+      "antenna_violations": 2,
+      "max_slew_violations": 7620,
+      "max_cap_violations": 140,
+      "core_area_um2": 653656,
+      "die_area_um2": 681917,
+      "die_w_um": 820.44,
+      "die_h_um": 831.16,
+      "stdcell_area_um2": 259752,
+      "utilization": 0.397383,
+      "instances": 46826,
+      "power_total_w": 0.04264897108078003,
+      "wirelength_um": 998369,
+      "config": {
+        "DESIGN_NAME": "rv32_core",
+        "CLOCK_PORT": "clk_i",
+        "CLOCK_NET": "clk_i",
+        "CLOCK_PERIOD": 30,
+        "FP_SIZING": "relative",
+        "FP_CORE_UTIL": 35,
+        "PL_TARGET_DENSITY_PCT": 45,
+        "PDK": "sky130A",
+        "STD_CELL_LIBRARY": "sky130_fd_sc_hd",
+        "SYNTH_STRATEGY": "AREA 0",
+        "RUN_HEURISTIC_DIODE_INSERTION": true,
+        "RUN_POST_GRT_DESIGN_REPAIR": true,
+        "RUN_POST_GRT_RESIZER_TIMING": true,
+        "GRT_ANTENNA_ITERS": 5,
+        "RSZ_CORNERS": [
+          "nom_tt_025C_1v80",
+          "min_tt_025C_1v80",
+          "max_tt_025C_1v80",
+          "nom_ss_100C_1v60",
+          "min_ss_100C_1v60",
+          "max_ss_100C_1v60",
+          "nom_ff_n40C_1v95",
+          "min_ff_n40C_1v95",
+          "max_ff_n40C_1v95"
+        ],
+        "CTS_CORNERS": [
+          "nom_tt_025C_1v80",
+          "nom_ss_100C_1v60",
+          "max_ss_100C_1v60",
+          "nom_ff_n40C_1v95"
+        ],
+        "FALLBACK_SDC_FILE": "dir::../constraints/base.sdc"
+      }
     }
   ],
   "phases": [

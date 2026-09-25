@@ -86,7 +86,7 @@ o template oficial antes do freeze físico (seção 3.3 do Plano Mestre).
 
 **Lacuna:** não há, nesta pasta de projeto, repositório/template oficial da
 ChampionCHIP nem firmware de referência — apenas o guia em PDF e o Plano
-Mestre gerado a partir dele (ver `rascunho.d`). O protocolo de execução do
+Mestre de planejamento gerado a partir dele. O protocolo de execução do
 Plano Mestre (seção 13) pede que a primeira fonte de verdade sejam os
 "arquivos oficiais da competição existentes no repositório", que não estão
 presentes.

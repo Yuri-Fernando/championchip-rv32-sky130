@@ -26,7 +26,7 @@ from _common import ROOT, run, py, summary, style, SERIES
 import pandas as pd
 import matplotlib.pyplot as plt
 from IPython.display import SVG, Image, Markdown, display
-print("projeto:", ROOT)"""
+print("projeto:", ROOT.name)"""
 
 
 def build(name: str, cells: list[tuple[str, str]]) -> None:
@@ -82,7 +82,7 @@ display(Markdown(f\"\"\"
 pd.DataFrame(S["physical"])[["label", "clock_period_ns", "clock_mhz", "setup_worst_slack_ns", "fmax_mhz_worst_corner",
                              "drc_klayout", "lvs_errors", "antenna_violations", "stdcell_area_um2", "power_total_w"]]"""),
     ("md", "## 6. Dashboard"),
-    ("code", 'py("tools/build_dashboard.py")\nprint("Abra no navegador:", (ROOT / "dashboard/index.html").as_uri())'),
+    ("code", 'py("tools/build_dashboard.py")\nprint("Abra no navegador: dashboard/index.html")'),
 ])
 
 # ---------------------------------------------------------------- 01

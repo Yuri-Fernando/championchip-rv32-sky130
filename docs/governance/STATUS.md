@@ -29,7 +29,7 @@ Logs em `docs/evidence/logs/`, resumos em `reports/`.
 3. **SG-03 / SG-04** — pinagem e polaridade do reset: a confirmar.
 4. **SG-05** — firmware oficial: bloqueia o requisito R7 na forma oficial.
 5. **KI-10** — violações de max slew/cap nos corners lentos (não afetam timing nem DRC/LVS).
-6. **Vídeo** — material pronto (`docs/video/`); falta gravar.
+6. **Vídeo** — apresentação e roteiro prontos (material local, fora do repositório); falta gravar.
 
 ## Próximo comando exato
 

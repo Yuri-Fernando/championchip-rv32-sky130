@@ -51,7 +51,7 @@ TEMPLATE = r"""<meta charset="utf-8">
   --ink: #0f1419; --ink-2: #4a5360; --muted: #7b8490;
   --grid: #e2e6ea; --axis: #c2c9d0; --ring: rgba(15,20,25,0.10);
   --accent: #2a78d6;
-  --s1: #2a78d6; --s2: #eb6834;
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a;
   --good: #0a8a0a; --good-bg: #e3f4e3; --warn: #9a6400; --warn-bg: #fdf1d6;
   --crit: #b42f2f; --crit-bg: #fbe4e4;
   --mono: "Chivo Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
@@ -63,7 +63,7 @@ TEMPLATE = r"""<meta charset="utf-8">
     --page: #0e1114; --surface: #161a1f; --surface-2: #1d2228;
     --ink: #f2f4f6; --ink-2: #b9c1ca; --muted: #8a939d;
     --grid: #262c33; --axis: #39414a; --ring: rgba(255,255,255,0.10);
-    --accent: #3987e5; --s1: #3987e5; --s2: #d95926;
+    --accent: #3987e5; --s1: #3987e5; --s2: #d95926; --s3: #199e70;
     --good: #3fc43f; --good-bg: #13301a; --warn: #f0b429; --warn-bg: #33280f;
     --crit: #ec6a6a; --crit-bg: #3a1a1a;
   }
@@ -73,7 +73,7 @@ TEMPLATE = r"""<meta charset="utf-8">
   --page: #0e1114; --surface: #161a1f; --surface-2: #1d2228;
   --ink: #f2f4f6; --ink-2: #b9c1ca; --muted: #8a939d;
   --grid: #262c33; --axis: #39414a; --ring: rgba(255,255,255,0.10);
-  --accent: #3987e5; --s1: #3987e5; --s2: #d95926;
+  --accent: #3987e5; --s1: #3987e5; --s2: #d95926; --s3: #199e70;
   --good: #3fc43f; --good-bg: #13301a; --warn: #f0b429; --warn-bg: #33280f;
   --crit: #ec6a6a; --crit-bg: #3a1a1a;
 }
@@ -333,7 +333,7 @@ $("#isa-grid").innerHTML = cats.map(c => `<div class="isa-row"><div class="isa-c
 (function slack() {
   const svg = $("#c-slack");
   const corners = Object.keys(base.setup_ws_by_corner);
-  const series = runs.map((r, i) => ({run: r, color: i === 0 ? "var(--s1)" : "var(--s2)", name: `${r.label} · ${fmt(r.clock_period_ns)} ns`}));
+  const series = runs.map((r, i) => ({run: r, color: `var(--s${Math.min(i + 1, 3)})`, name: `${r.label} · ${fmt(r.clock_period_ns)} ns`}));
   $("#slack-legend").innerHTML = series.map(s => `<span><i style="background:${s.color}"></i>${esc(s.name)}</span>`).join("");
   const W = 560, padL = 118, padR = 40, rowH = 12 * series.length + 14, H = corners.length * rowH + 30;
   const max = Math.max(...runs.flatMap(r => Object.values(r.setup_ws_by_corner).map(Number)));

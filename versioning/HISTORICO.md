@@ -12,9 +12,9 @@ Histórico completo de arquivos: `git log --stat`.
 
 - Material de partida: o guia oficial da Fase 2 (PDF de ~60 páginas) e um
   **Plano Mestre de Engenharia** de 19 páginas derivado dele
-  (`docs/planning/`), com arquitetura, FSM, matriz de 47 instruções, estratégia
+  (documento interno de planejamento), com arquitetura, FSM, matriz de 47 instruções, estratégia
   de verificação, fluxo OpenLane, riscos e protocolo de execução por fases.
-- A nota inicial (`docs/planning/rascunho_ideia_inicial.md`) já apontava os
+- A nota inicial de planejamento já apontava os
   quatro pontos críticos: alvo RV32I + Zmmul + Xicrc = 47 instruções; manter
   multicycle; DMEM síncrona exige estado de espera; CRC sem parâmetros no guia
   (não inventar).
@@ -66,8 +66,7 @@ corners**, die de 0,68 mm², folga de setup de 11,57 ns no pior corner.
 
 ## Sessão 3 — 25/09/2026: melhorias, dashboard, apresentação e entrega
 
-**Reorganização.** Guia oficial em `docs/reference/`; plano mestre e rascunho
-em `docs/planning/`; governança em `docs/governance/`; notebooks em
+**Reorganização.** Governança em `docs/governance/`; notebooks em
 `notebooks/`; histórico e changelog nesta pasta `versioning/`. Pastas vazias
 receberam função (CI, waveforms, cobertura, relatórios) ou foram removidas.
 
@@ -116,4 +115,4 @@ espelho, Linux com Docker, ou nativo), CI no GitHub Actions, waveforms em SVG
 (`tools/vcd2svg.py`), agregador de evidências (`tools/build_reports.py`),
 dashboard HTML (`tools/build_dashboard.py`), notebooks por etapa
 (`tools/make_notebooks.py`), apresentação e roteiro do vídeo gerados dos
-números reais (`tools/deck/`).
+números reais.

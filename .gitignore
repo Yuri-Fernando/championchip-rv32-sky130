@@ -26,7 +26,13 @@ Thumbs.db
 # Saidas intermediarias de simulacao (regeneradas pelos scripts)
 build/
 
-# Pacote de entrega (gerado)
-dist/
 __pycache__/
 *.pyc
+
+# Material local, fora do repositório e do pacote de entrega:
+# planejamento, material do vídeo, pacotes (dist) e o guia oficial (terceiros)
+desconsiderar/
+dist/
+
+# Dashboard: saída gerada por `make dashboard` (tools/build_dashboard.py)
+dashboard/

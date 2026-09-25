@@ -9,7 +9,7 @@ Números atualizados em 25/09/2026 a partir de [`reports/summary.json`](../repor
 [histórico](HISTORICO.md) (como e por quê, sessão a sessão) ·
 [decisões](../docs/governance/DECISIONS.md) (ADR-001 a ADR-015) ·
 [lacunas](../docs/governance/SPEC_GAPS.md) · [problemas conhecidos](../docs/governance/KNOWN_ISSUES.md) ·
-[status](../docs/governance/STATUS.md) · [dashboard](../dashboard/index.html)
+[status](../docs/governance/STATUS.md) · dashboard: `make dashboard`
 
 ---
 
@@ -22,7 +22,7 @@ Números atualizados em 25/09/2026 a partir de [`reports/summary.json`](../repor
 | Processo / biblioteca | SkyWater SKY130 (`sky130A`) · `sky130_fd_sc_hd` |
 | Fluxo físico | OpenLane 2.3.10 (`--dockerized`), fluxo Classic |
 | Mapa de memória | IMEM `0x0040_0000` (ROM, até 4 MB) · DMEM `0x1001_0000` (SRAM síncrona, 8 kB) |
-| Documentos de origem | [guia oficial](../docs/reference/Champion-chip-guia-fase-2.pdf) · [Plano Mestre](../docs/planning/Plano_Mestre_ChampionCHIP_Fase2.pdf) · [nota inicial](../docs/planning/rascunho_ideia_inicial.md) |
+| Documentos de origem | guia oficial da Fase 2 ([championchipexperience.org](https://championchipexperience.org/)) · Plano Mestre de Engenharia (documento interno de planejamento, não versionado) |
 
 ## 2. Rastreabilidade: requisitos do guia → evidência
 
@@ -37,7 +37,7 @@ Requisitos R1–R10 conforme extraídos na seção 2 do Plano Mestre.
 | R5 | Relatório com os tópicos 1 a 6 | ✅ | [`RELATORIO.md`](../docs/submission/RELATORIO.md) |
 | R6 | Área, densidade, GDSII, netlist GL, config | ✅ | [`docs/evidence/openlane/`](../docs/evidence/openlane/), [`physical_sweep.csv`](../reports/physical_sweep.csv) |
 | R7 | Waveform e logs até o fim do firmware oficial | 🟡 | firmware autoral: [log](../docs/evidence/logs/firmware_smoke.log), [waveforms](../docs/evidence/waveforms/); oficial: SG-05 |
-| R8 | Vídeo de 5 a 7 min | 🟡 material pronto | [apresentação](../docs/video/Apresentacao_ChampionCHIP.pptx), [roteiro](../docs/video/ROTEIRO_VIDEO.md) (~6:26); gravação: autor |
+| R8 | Vídeo de 5 a 7 min | 🟡 material pronto | apresentação de 17 slides e roteiro (~6:26), mantidos fora do repositório; gravação: autor |
 | R9 | Explicação e testbench individual por módulo | ✅ | [`tb/unit/`](../tb/unit/), seção 4 do relatório |
 | R10 | 12 pinos (8 GPIO, 2 serial, clock, reset) | 🟡 | pinos reservados em `chip_top.sv`; comportamento: SG-03 |
 
@@ -110,9 +110,8 @@ Requisitos R1–R10 conforme extraídos na seção 2 do Plano Mestre.
 | Métricas físicas | `docs/evidence/openlane/run_*/metrics.json` | `scripts/run_openlane.sh` |
 | GDSII / netlist | `docs/evidence/openlane/run_*/*.gds, *.nl.v` (fora do git) | `scripts/run_openlane.sh` |
 | Resumos | `reports/` | `tools/build_reports.py`, `tools/mutation/run_mutation.py` |
-| Dashboard | `dashboard/index.html` | `tools/build_dashboard.py` |
+| Dashboard | `dashboard/index.html` (gerado, fora do git) | `make dashboard` |
 | Notebooks | `notebooks/0*.ipynb` | `tools/make_notebooks.py` |
-| Apresentação + roteiro | `docs/video/` | `tools/deck/build_deck.js` |
 
 ## 7. Versões
 

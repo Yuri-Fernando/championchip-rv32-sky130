@@ -1,7 +1,7 @@
 # ChampionCHIP eXperience — Fase 2 — Relatório Técnico
 
 **Processador:** RV32I_Zmmul_Xicrc (núcleo multicycle)
-**Documento-base:** `Plano_Mestre_ChampionCHIP_Fase2.pdf` + guia oficial `Champion-chip-guia-fase-2.pdf`
+**Documento-base:** guia oficial da Fase 2 da ChampionCHIP eXperience + Plano Mestre de Engenharia (documento interno de planejamento)
 
 ---
 

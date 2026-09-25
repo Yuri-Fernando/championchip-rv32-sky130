@@ -5,7 +5,7 @@
 # =============================================================================
 PY ?= python
 
-.PHONY: help build-image lint test mutation firmware gls openlane openlane-opt reports dashboard notebooks deck all
+.PHONY: help build-image lint test mutation firmware gls openlane openlane-opt openlane-final reports dashboard notebooks all
 
 help:
 	@echo "build-image   imagem Docker com todas as ferramentas (uma vez)"
@@ -15,11 +15,11 @@ help:
 	@echo "firmware      compila e simula o firmware (log + waveform)"
 	@echo "openlane      RTL -> GDSII baseline (40 ns, ~50 min)"
 	@echo "openlane-opt  RTL -> GDSII otimizado (30 ns, ~50 min)"
+	@echo "openlane-final RTL -> GDSII final (30 ns + reparo em todos os corners)"
 	@echo "gls           simulacao gate-level da netlist pos-layout"
 	@echo "reports       agrega evidencias em reports/"
 	@echo "dashboard     gera dashboard/index.html"
 	@echo "notebooks     regenera e executa os notebooks"
-	@echo "deck          gera a apresentacao e o roteiro do video"
 	@echo "all           lint + test + mutation + gls + reports + dashboard"
 
 build-image:
@@ -43,6 +43,9 @@ openlane:
 openlane-opt:
 	bash scripts/run_openlane.sh openlane/config/config_opt30.json opt30
 
+openlane-final:
+	bash scripts/run_openlane.sh openlane/config/config_final.json final
+
 gls:
 	bash scripts/run_gls.sh
 
@@ -55,8 +58,5 @@ dashboard: reports
 notebooks:
 	$(PY) tools/make_notebooks.py
 	$(PY) -m jupyter nbconvert --to notebook --execute --inplace --ExecutePreprocessor.timeout=3600 notebooks/0*.ipynb
-
-deck: reports
-	NODE_PATH=$${NODE_PATH:-C:/tmp/championchip-deck/node_modules} node tools/deck/build_deck.js
 
 all: lint test mutation gls dashboard

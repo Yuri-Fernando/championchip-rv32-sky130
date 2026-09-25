@@ -86,7 +86,8 @@ def physical_runs() -> list[dict]:
             "wirelength_um": m.get("route__wirelength"),
             "config": {k: cfg[k] for k in cfg if k not in ("VERILOG_FILES", "VERILOG_INCLUDE_DIRS")},
         })
-    return runs
+    order = {"baseline": 0, "opt30": 1, "final": 2}  # ordem cronologica das rodadas
+    return sorted(runs, key=lambda r: (order.get(r["label"], 1.5), r["label"]))
 
 
 def spec_gaps() -> list[dict]:
