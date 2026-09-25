@@ -8,7 +8,7 @@ firmware/build/*
 # OpenLane - runs completos e binarios pesados de layout NAO sao versionados
 # (dezenas de MB a GB); reproduziveis via `bash scripts/run_openlane.sh`.
 # Evidencia versionada: metrics.json, config.json e a imagem PNG do layout
-# em docs/evidence/openlane/run_best/.
+# de cada rodada em docs/evidence/openlane/run_*/.
 openlane/runs/
 !openlane/runs/.gitkeep
 docs/evidence/openlane/*/*.gds

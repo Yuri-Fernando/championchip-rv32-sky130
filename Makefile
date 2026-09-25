@@ -15,7 +15,7 @@ help:
 	@echo "firmware      compila e simula o firmware (log + waveform)"
 	@echo "openlane      RTL -> GDSII baseline (40 ns, ~50 min)"
 	@echo "openlane-opt  RTL -> GDSII otimizado (30 ns, ~50 min)"
-	@echo "openlane-final RTL -> GDSII final (30 ns + reparo em todos os corners)"
+	@echo "openlane-final RTL -> GDSII final (30 ns, sem diodos heuristicos)"
 	@echo "gls           simulacao gate-level da netlist pos-layout"
 	@echo "reports       agrega evidencias em reports/"
 	@echo "dashboard     gera dashboard/index.html"

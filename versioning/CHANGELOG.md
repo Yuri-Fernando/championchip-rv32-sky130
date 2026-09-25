@@ -129,3 +129,30 @@ BLOCKED-XICRC — ver SPEC_GAPS.md SG-01.
 ### Pendente
 - Xicrc (SG-01), macro de memória (SG-02), pinagem (SG-03), reset (SG-04),
   firmware oficial (SG-05); slew/cap no corner lento (KI-10); gravação do vídeo.
+
+## [v0.9-final-fisico] — 25/09/2026
+
+### Corrigido
+- Violações de max slew / max cap no corner lento: causa raiz encontrada na
+  inserção heurística de diodos (16.570 diodos após o reparo). Desligada, com
+  reparo de antena direcionado reforçado (`config_final.json`, ADR-016):
+  slew 7.620 → 3.139, células 46.826 → 30.947, área std-cell −15 %, folga de
+  setup 1,14 → 2,64 ns (Fmax estimada 36,6 MHz). DRC 0, LVS 0.
+- Arquivos intermediários do baseline restaurados (rodada refeita, resultado
+  idêntico; KI-07 resolvido).
+
+### Adicionado
+- Rodada `run_final/` com layout renderizado e simulação gate-level
+  (`gls_final.log`: firmware + 10 programas aleatórios, PASS).
+- README no padrão do portfólio, licença MIT, `config_final.json`.
+- KI-11: 19 violações de antena restantes (efeito colateral documentado).
+
+### Alterado
+- Material local (planejamento, guia oficial, vídeo, pacotes de entrega,
+  rodadas arquivadas) movido para `desconsiderar/`, fora do git e do pacote.
+- Dashboard vira saída gerada (`make dashboard`), fora do git.
+
+### Pendente
+- Xicrc (SG-01), macro de memória (SG-02), pinagem (SG-03), reset (SG-04),
+  firmware oficial (SG-05); slew/cap residual (KI-10) e antena (KI-11);
+  gravação do vídeo.

@@ -201,3 +201,44 @@ aleatórios.
 **Razão:** fecha a fase F9 do Plano Mestre (risco R-09, divergência RTL × GL).
 Simulação funcional (sem atrasos SDF): verifica a lógica gerada pela síntese;
 o timing já é coberto pela STA multi-corner do OpenLane.
+
+## ADR-016 — Desligar a inserção heurística de diodos (causa raiz das violações de slew/cap)
+
+**Contexto:** as rodadas baseline e opt30 fechavam timing, mas tinham ~7,5 mil
+violações de max slew e ~140 de max cap nos corners lentos (`ss`, 100 °C,
+1,60 V). Duas hipóteses foram testadas e descartadas com evidência:
+1. *Reparo pós-roteamento desligado* — ligado na opt30 (`RUN_POST_GRT_DESIGN_REPAIR`),
+   sem efeito.
+2. *Reparo atuando só no corner típico* — `RSZ_CORNERS` estava vazio (o reparo
+   usava apenas `nom_tt`). Na rodada "final" v1 o reparo passou a enxergar os
+   9 corners (confirmado no `resolved.json` e no log, que carregou as libs
+   `ss`/`ff`): o reparo pós-posicionamento achou e corrigiu 729 violações de
+   slew, o pós-roteamento não achou nenhuma — e ainda assim a STA final
+   mostrou 7.620. Resultado idêntico ao da opt30.
+**Causa raiz:** `RUN_HEURISTIC_DIODE_INSERTION: true` (herdado, na sessão 1, da
+opção legada `DIODE_INSERTION_STRATEGY`). Essa etapa roda **depois** do reparo
+de projeto e insere um diodo de antena em quase todo pino de rede longa:
+**16.570 diodos, ~35 % das 46,8 mil células**. Cada diodo soma capacitância
+à rede, o que degrada o slew no corner lento sem que nenhum reparo rode
+depois. Metade das 7.760 linhas de violação no relatório `max_ss` são os
+próprios pinos `ANTENNA_*/DIODE`.
+**Decisão:** `config_final.json` desliga a inserção heurística e mantém o
+reparo de antena direcionado (`RUN_ANTENNA_REPAIR`, padrão do OpenLane, com
+`GRT_ANTENNA_ITERS: 5`), que só insere diodos onde há violação de antena real;
+mantém também `RSZ_CORNERS` com os 9 corners e `CTS_CORNERS` com os corners
+extremos.
+**Resultado:**
+
+| Rodada (30 ns) | Diodos | Células | Slew / Cap (`max_ss`) | Antena (pior razão) | Folga de setup |
+|---|---|---|---|---|---|
+| v1 — heurística ligada | 16.570 | 46.826 | 7.620 / 140 | 2 | 1,14 ns |
+| v2 — heurística desligada, `GRT_ANTENNA_ITERS` 5 | 344 | 30.600 | 3.042 / 111 | 31 (3,16) | 2,79 ns |
+| **v3 — + `GRT_ANTENNA_ITERS` 10, `GRT_ANTENNA_MARGIN` 30, `DIODE_ON_PORTS` both** | 691 | 30.947 | 3.139 / 111 | **19 (2,87)** | 2,64 ns |
+
+A v3 foi mantida: troca 3 % de slew por 39 % menos violações de antena, que
+são um risco de fabricação (dano ao óxido de porta), enquanto slew no corner
+lento é um risco elétrico que não quebra a função (setup e hold fecham em
+todos os corners). DRC 0 e LVS 0 nas três.
+**Registro:** v1 e v3 arquivadas localmente (`final_com_diodos.tar.gz`,
+`final_v3_20260925_183159.tar.gz`), v2 em `run_final_v2_sem_diodos/`; a v3 é
+a `docs/evidence/openlane/run_final`.

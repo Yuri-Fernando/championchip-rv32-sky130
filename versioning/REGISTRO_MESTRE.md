@@ -53,8 +53,8 @@ Requisitos R1–R10 conforme extraídos na seção 2 do Plano Mestre.
 | F5 | Zmmul 4/4 + Xicrc | 🟡 | Zmmul fechada; Xicrc estrutural |
 | F6 | Firmware | 🟡 | autoral PASS (RTL e gate-level) |
 | F7 | OpenLane baseline | ✅ | `run_best/`: 40 ns, DRC 0, LVS 0, folga 11,57 ns |
-| F8 | Otimização física | ✅ | `run_opt30/`: 30 ns (33,3 MHz), DRC 0, LVS 0, folga 1,14 ns |
-| F9 | Gate-level regression | ✅ | `gls_baseline.log`, `gls_opt30.log`: firmware + 10 programas aleatórios |
+| F8 | Otimização física | ✅ | `run_opt30/` e `run_final/`: 30 ns (33,3 MHz), DRC 0, LVS 0; final com folga 2,64 ns, slew −59 %, células −34 % |
+| F9 | Gate-level regression | ✅ | `gls_baseline.log`, `gls_opt30.log`, `gls_final.log`: firmware + 10 programas aleatórios |
 | F10 | Relatório, vídeo, submissão | 🟡 | tudo pronto exceto a gravação do vídeo |
 
 ## 4. Definition of Done (seção 14 do Plano Mestre)
@@ -76,24 +76,25 @@ Requisitos R1–R10 conforme extraídos na seção 2 do Plano Mestre.
 
 ## 5. Resultados-chave
 
-| Métrica | Baseline (40 ns) | Otimizada (30 ns) |
-|---|---|---|
-| Frequência | 25,0 MHz | **33,3 MHz** |
-| Folga de setup, pior corner (`max_ss_100C_1v60`) | 11,57 ns | 1,14 ns |
-| Fmax estimada no pior corner | 35,2 MHz | 34,7 MHz |
-| Folga de hold, pior corner | 0,282 ns | 0,283 ns |
-| DRC (KLayout / Magic) · LVS | 0 / 0 · 0 | 0 / 0 · 0 |
-| Violações de antena | 2 | 2 |
-| Max slew / max cap (corners lentos) | 7.486 / 143 | 7.620 / 140 |
-| Área de standard cells · die | 259.760 µm² · 681.917 µm² | 259.752 µm² · 681.917 µm² |
-| Potência total estimada | 31,9 mW | 42,6 mW |
+| Métrica | Baseline (40 ns) | Otimizada (30 ns) | **Final (30 ns)** |
+|---|---|---|---|
+| Frequência | 25,0 MHz | 33,3 MHz | **33,3 MHz** |
+| Folga de setup, pior corner (`max_ss_100C_1v60`) | 11,57 ns | 1,14 ns | **2,64 ns** |
+| Fmax estimada no pior corner | 35,2 MHz | 34,7 MHz | **36,6 MHz** |
+| Folga de hold, pior corner | 0,282 ns | 0,283 ns | 0,281 ns |
+| DRC (KLayout / Magic) · LVS | 0 / 0 · 0 | 0 / 0 · 0 | 0 / 0 · 0 |
+| Violações de antena | 2 | 2 | 19 |
+| Max slew / max cap (corners lentos) | 7.486 / 143 | 7.620 / 140 | **3.139 / 111** |
+| Células (diodos) | 46.827 (16.570) | 46.826 (16.570) | **30.947 (691)** |
+| Área de standard cells · die | 259.760 µm² · 681.917 µm² | 259.752 µm² · 681.917 µm² | **220.016 µm²** · 681.917 µm² |
+| Potência total estimada | 31,9 mW | 42,6 mW | 42,0 mW |
 
 | Verificação | Resultado |
 |---|---|
 | Suítes de regressão | 14/14 PASS |
 | Diferencial randomizado | 20 programas × 200 instruções, idênticos ao modelo |
 | Teste de mutação | 13/13 bugs detectados |
-| Gate-level | firmware + 10 programas, nas duas netlists |
+| Gate-level | firmware + 10 programas, nas três netlists |
 | Bugs reais encontrados no RTL | 2 (JAL/JALR, ADR-003) |
 | Lacunas encontradas na própria verificação | 2 (gerador aleatório, ADR-014) |
 
@@ -121,5 +122,6 @@ Requisitos R1–R10 conforme extraídos na seção 2 do Plano Mestre.
 | v0.5-firmware-smoke | 14/09/2026 | firmware autoral PASS |
 | v0.7-openlane-baseline | 14/09/2026 | GDSII com DRC 0 / LVS 0 |
 | v0.8-verificacao-avancada | 25/09/2026 | ISS, randomizado, mutação 13/13, gate-level, 33,3 MHz, dashboard, notebooks, apresentação |
+| v0.9-final-fisico | 25/09/2026 | causa das violações de slew/cap (diodos heurísticos), rodada final, repositório limpo para publicação |
 
 Detalhes em [`CHANGELOG.md`](CHANGELOG.md).

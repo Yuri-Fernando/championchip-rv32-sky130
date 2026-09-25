@@ -19,7 +19,8 @@ ROOT = Path(__file__).resolve().parent.parent
 def main() -> None:
     summary = json.loads((ROOT / "reports/summary.json").read_text(encoding="utf-8"))
     ok = [r for r in summary["physical"] if r["drc_klayout"] == 0 and r["lvs_errors"] == 0 and r["setup_worst_slack_ns"] >= 0]
-    best = min(ok, key=lambda r: r["clock_period_ns"]) if ok else summary["physical"][0]
+    # menor periodo; em empate, a rodada mais recente (a lista vem em ordem cronologica)
+    best = min(reversed(ok), key=lambda r: r["clock_period_ns"]) if ok else summary["physical"][0]
     layout = ROOT / best["dir"] / "rv32_core_layout.png"
     if not layout.exists():
         layout = ROOT / "docs/evidence/openlane/run_best/rv32_core_layout.png"
@@ -239,7 +240,7 @@ function sv(tag, attrs, parent) { const n = document.createElementNS(NS, tag); f
 const runs = D.physical;
 const base = runs.find(r => r.label === "baseline") || runs[0];
 const best = runs.filter(r => r.drc_klayout === 0 && r.lvs_errors === 0 && r.setup_worst_slack_ns >= 0)
-                 .sort((a, b) => a.clock_period_ns - b.clock_period_ns)[0] || base;
+                 .reverse().sort((a, b) => a.clock_period_ns - b.clock_period_ns)[0] || base;  // empate: a mais recente
 const V = D.verification;
 const randomRow = V.regression.find(r => r.suite === "random");
 const glsOk = V.gls.length && V.gls.every(r => r.status === "PASS");

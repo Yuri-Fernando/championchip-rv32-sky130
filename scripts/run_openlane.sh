@@ -53,7 +53,10 @@ docker run --rm -t \
 
 RC=${PIPESTATUS[0]}
 # log legivel: remove codigos ANSI e barras de progresso (~12 MB -> KB)
-(python "$PROJDIR/tools/clean_log.py" "$PROJDIR/docs/evidence/logs/openlane_${LABEL}.log" || python3 "$PROJDIR/tools/clean_log.py" "$PROJDIR/docs/evidence/logs/openlane_${LABEL}.log") >/dev/null 2>&1
+# (tenta cada interpretador: no Windows "python3" pode ser o stub da loja)
+for PY in python py python3; do
+  "$PY" "$PROJDIR/tools/clean_log.py" "$PROJDIR/docs/evidence/logs/openlane_${LABEL}.log" >/dev/null 2>&1 && break
+done
 
 # O run completo (~2 GB) fica SOMENTE no mirror local (C:/tmp), nunca na
 # pasta sincronizada do Google Drive; copiamos apenas as evidencias finais.

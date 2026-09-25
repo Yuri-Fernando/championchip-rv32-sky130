@@ -34,8 +34,8 @@ PHASES = [
     ("F5", "Zmmul + Xicrc", "partial", "Zmmul 4/4; Xicrc bloqueada por especificação (SG-01)"),
     ("F6", "Firmware", "partial", "Firmware autoral PASS; oficial indisponível (SG-05)"),
     ("F7", "OpenLane baseline", "done", "GDSII com DRC 0, LVS 0, timing fechado"),
-    ("F8", "Otimização física", "done", "40 ns → 30 ns (33,3 MHz), timing fechado; slew/cap do corner lento pendente"),
-    ("F9", "Gate-level regression", "done", "Netlists baseline e 30 ns equivalentes ao modelo de referência"),
+    ("F8", "Otimização física", "done", "40 ns → 30 ns (33,3 MHz); diodos heurísticos removidos: slew −59 %, células −34 %; slew/cap residual no corner ss"),
+    ("F9", "Gate-level regression", "done", "Netlists das 3 rodadas equivalentes ao modelo de referência"),
     ("F10", "Relatório / vídeo / submissão", "partial", "Relatório, dashboard, notebooks, slides e roteiro prontos; vídeo a gravar"),
 ]
 

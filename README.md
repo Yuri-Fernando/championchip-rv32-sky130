@@ -6,7 +6,7 @@
 ![ISA](https://img.shields.io/badge/ISA-44%2F47-2a78d6)
 ![mutation score](https://img.shields.io/badge/mutation%20score-13%2F13-0a8a0a)
 ![DRC LVS](https://img.shields.io/badge/DRC%20%C2%B7%20LVS-0%20%C2%B7%200-0a8a0a)
-![clock](https://img.shields.io/badge/clock-__FINAL_MHZ_BADGE__%20MHz-c8742a)
+![clock](https://img.shields.io/badge/clock-33,3%20MHz-c8742a)
 ![PDK](https://img.shields.io/badge/PDK-SKY130%20130nm-4a5563)
 ![license](https://img.shields.io/badge/license-MIT-4a5563)
 
@@ -204,10 +204,17 @@ Otimização física (30 ns) e correção de slew/cap multi-corner
    os loads quase sempre liam zero, então o sign-extend de LB/LH passava sem
    teste. Com laços (branch para trás) e memória pré-preenchida: **13/13**
    ([ADR-014](docs/governance/DECISIONS.md)).
-4. **Violações de slew/capacitância no corner lento** — a primeira tentativa de
-   reparo não funcionou. A causa: o reparo do OpenLane (`RSZ_CORNERS`) atuava só
-   no corner típico, e no corner lento (`ss`, 100 °C, 1,60 V) uma rede de alta
-   carga chegava a 2,59 ns de slew contra 1,5 ns de limite. __FINAL_SLEW_ACHADO__
+4. **Violações de slew/capacitância no corner lento** — duas hipóteses testadas
+   não mudaram nada: ligar o reparo pós-roteamento e estender o reparo
+   (`RSZ_CORNERS`) aos 9 corners (o log mostra 729 violações corrigidas, mas a
+   análise final continuava com ~7.600). A causa real estava em outro passo: a
+   **inserção heurística de diodos de antena**, ligada na configuração inicial,
+   roda depois do reparo e colocava **16.570 diodos (~35 % das células)**; a
+   capacitância somada degradava o slew no corner `ss` (100 °C, 1,60 V).
+   Desligada, com reparo de antena direcionado no lugar: slew −59 %, células
+   −34 %, área −15 % e folga de setup de 1,14 para 2,64 ns
+   ([ADR-016](docs/governance/DECISIONS.md)). Restam violações no corner lento
+   e 19 de antena, documentadas em [KNOWN_ISSUES](docs/governance/KNOWN_ISSUES.md).
 5. **Ambiente** — o Docker não monta pastas sincronizadas (Google Drive), o OpenLane
    não roda no Python do Windows (`signal.SIGKILL`) e o modo `--dockerized`
    exige que os caminhos valham para o daemon em containers aninhados. Cada
@@ -246,7 +253,16 @@ Otimização física (30 ns) e correção de slew/cap multi-corner
 
 **Implementação física (OpenLane 2 · sky130_fd_sc_hd · 9 corners)**
 
-__TABELA_FISICA__
+| Rodada | Clock | Folga de setup (pior corner) | Fmax estimada | DRC | LVS | Antena | Slew / Cap (corner ss) | Células | Área std-cell | Potência |
+|---|---|---|---|---|---|---|---|---|---|---|
+| baseline | 40 ns · 25 MHz | 11,57 ns | 35,2 MHz | 0 | 0 | 2 | 7.486 / 143 | 46.827 | 259.760 µm² | 31,9 mW |
+| opt30 | 30 ns · 33,3 MHz | 1,14 ns | 34,7 MHz | 0 | 0 | 2 | 7.620 / 140 | 46.826 | 259.752 µm² | 42,6 mW |
+| **final** | **30 ns · 33,3 MHz** | **2,64 ns** | **36,6 MHz** | **0** | **0** | 19 | **3.139 / 111** | **30.947** | **220.016 µm²** | **42,0 mW** |
+
+- Die de 820 × 831 µm em todas as rodadas; utilização caiu de 39,7 % para 33,7 % na final;
+- Hold fechado em todos os corners (pior folga 0,28 ns);
+- **Fmax estimada** = 1000 / (período − folga no pior corner); é uma estimativa, não uma rodada fechada nessa frequência;
+- As violações de slew/cap restantes ficam no corner lento (`ss`, 100 °C, 1,60 V); no corner típico elas não existem. As 19 de antena têm razão máxima 2,87 (limite 1,0), em fios longos de met1/met3.
 
 ---
 
@@ -325,7 +341,7 @@ Firmware autoral executando no RTL e na netlist gate-level; firmware oficial ain
 40 ns (25 MHz), DRC 0, LVS 0, timing fechado em todos os corners.
 
 **F8 — Otimização física** ✅ Concluída
-30 ns (33,3 MHz) com timing fechado; __FINAL_ROADMAP_F8__
+30 ns (33,3 MHz) com timing fechado; causa das violações de slew/cap encontrada (diodos heurísticos) e reduzida em 59 %.
 
 **F9 — Gate-level regression** ✅ Concluída
 Netlists pós-layout equivalentes ao modelo de referência.
@@ -398,7 +414,7 @@ firmware/
   linker/        linker script com o mapa de memória do SoC
   official/      ponto de entrada do firmware oficial (SG-05)
 openlane/
-  config/        config.json (40 ns) · config_opt30.json (30 ns) · config_final.json (30 ns + reparo multi-corner)
+  config/        config.json (40 ns) · config_opt30.json (30 ns) · config_final.json (30 ns · reparo multi-corner · sem diodos heurísticos)
   constraints/   base.sdc (período lido da configuração)
 tools/
   iss/           modelo de referência (rv32_iss.py) e gerador de programas aleatórios

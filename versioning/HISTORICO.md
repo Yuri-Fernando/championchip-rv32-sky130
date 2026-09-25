@@ -116,3 +116,31 @@ espelho, Linux com Docker, ou nativo), CI no GitHub Actions, waveforms em SVG
 dashboard HTML (`tools/build_dashboard.py`), notebooks por etapa
 (`tools/make_notebooks.py`), apresentação e roteiro do vídeo gerados dos
 números reais.
+
+## Sessão 4 — 25/09/2026 (tarde): correções, publicação e entrega limpa
+
+**Arquivos intermediários restaurados (KI-07).** A rodada baseline foi refeita:
+resultado idêntico ao original (mesmo GDS, byte a byte do mesmo tamanho), o
+que confirma que o fluxo é determinístico. Os relatórios e logs de cada etapa
+passaram a ser arquivados fora da pasta temporária do sistema.
+
+**Investigação das violações de slew/cap (ADR-016)** — hipóteses testadas
+uma de cada vez:
+1. Reparo pós-roteamento desligado → ligado na rodada opt30: sem efeito.
+2. Reparo só no corner típico → `RSZ_CORNERS` com os 9 corners (rodada final
+   v1): o log mostra o reparo carregando as bibliotecas `ss`/`ff` e corrigindo
+   729 violações, mas a STA final continuou com 7.620. Resultado idêntico à opt30.
+3. **Causa raiz:** a inserção heurística de diodos, ligada na configuração da sessão 1,
+   roda depois do reparo e colocou 16.570 diodos (~35 % das células); a
+   capacitância somada degrada o slew no corner lento. Desligada na rodada
+   final v2: slew −60 %, células −35 %, folga de setup de 1,14 para 2,79 ns,
+   mas surgiram 31 violações de antena (pior razão 3,16).
+4. **Rodada final v3:** reparo de antena reforçado (10 iterações, margem de
+   30 %, diodos só nas portas de I/O). Antena 31 → 19 (pior razão 2,87), com
+   custo pequeno: folga 2,64 ns, slew 3.139. Mantida como resultado final.
+   Simulação gate-level repetida na netlist final.
+
+**Organização para publicação.** Material local (planejamento, vídeo, pacotes,
+guia oficial da competição) movido para `desconsiderar/`, fora do git e do
+pacote de entrega. Dashboard passou a ser saída gerada (`make dashboard`).
+README reescrito no padrão do portfólio; licença MIT.
