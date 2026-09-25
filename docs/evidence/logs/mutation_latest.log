@@ -1,0 +1,15 @@
+MORTO      ALU: SRA vira SRL                        detectado em  8/20 programas
+MORTO      ALU: SLT vira SLTU                       detectado em 14/20 programas
+MORTO      ALU: SUB vira ADD                        detectado em 12/20 programas
+MORTO      MUL: MULHSU usa signed x signed          detectado em  4/20 programas
+MORTO      MUL: MULHU usa signed x signed           detectado em  7/20 programas
+MORTO      LSU: LB sem sign-extend                  detectado em 18/20 programas
+MORTO      LSU: LH sem sign-extend                  detectado em 15/20 programas
+MORTO      LSU: SH sempre na metade baixa           detectado em 18/20 programas
+MORTO      BRANCH: BLTU vira BLT                    detectado em 11/20 programas
+MORTO      BRANCH: BGE vira BGT                     detectado em  4/20 programas
+MORTO      IMM: imediato B sem bit 11               detectado em 19/20 programas
+MORTO      REGFILE: x0 gravavel                     detectado em 18/20 programas
+MORTO      CORE: link do JAL = PC atual (sem +4)    detectado em 18/20 programas
+
+Mutation score: 13/13 mutantes mortos (100%)

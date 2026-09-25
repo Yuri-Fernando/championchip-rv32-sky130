@@ -1,0 +1,119 @@
+# HISTÓRICO — linha do tempo do projeto
+
+Registro cronológico de como o projeto evoluiu, sessão a sessão: o que foi
+feito, o que deu errado e como foi resolvido. Complementa o
+[`CHANGELOG.md`](CHANGELOG.md) (o que mudou em cada versão) e o
+[`REGISTRO_MESTRE.md`](REGISTRO_MESTRE.md) (onde está cada coisa).
+Histórico completo de arquivos: `git log --stat`.
+
+---
+
+## Origem — 14/09/2026: do guia ao plano
+
+- Material de partida: o guia oficial da Fase 2 (PDF de ~60 páginas) e um
+  **Plano Mestre de Engenharia** de 19 páginas derivado dele
+  (`docs/planning/`), com arquitetura, FSM, matriz de 47 instruções, estratégia
+  de verificação, fluxo OpenLane, riscos e protocolo de execução por fases.
+- A nota inicial (`docs/planning/rascunho_ideia_inicial.md`) já apontava os
+  quatro pontos críticos: alvo RV32I + Zmmul + Xicrc = 47 instruções; manter
+  multicycle; DMEM síncrona exige estado de espera; CRC sem parâmetros no guia
+  (não inventar).
+- A pasta do projeto não tinha repositório nem template oficial da
+  competição — só os documentos.
+
+## Sessão 1 — 14/09/2026: RTL, verificação, firmware e silício
+
+**F0–F1.** Estrutura de repositório, 14 módulos RTL, imagem Docker de
+desenvolvimento (Icarus Verilog, Verilator, GCC RISC-V, GTKWave).
+
+**Obstáculo de ambiente #1.** O Docker Desktop não monta a unidade do Google
+Drive (`G:`). Solução: espelhar as fontes em `C:/tmp/championchip-build`
+(ADR-007).
+
+**F2–F5.** 8 testbenches unitários e 4 de ISA. Todos passaram, exceto o de
+branches/saltos, que revelou **dois bugs reais** (ADR-003):
+1. PC atualizado duas vezes em JAL/JALR (EXEC_JUMP e WB_ALU escreviam o PC) —
+   exatamente o risco R-07 que o Plano Mestre previa.
+2. O endereço de retorno (PC+4) era lido do PC já saltado. Corrigido com o
+   registrador `link_reg`.
+
+Resultado: 44/47 instruções fechadas; Xicrc isolada como BLOCKED-XICRC.
+
+**F6.** Firmware autoral em estilo `riscv-tests`, compilado com
+`riscv64-unknown-elf-gcc -march=rv32im`. Primeiro build gerou um binário de
+264 MB (o `objcopy` preencheu o vão entre IMEM e DMEM); corrigido extraindo só
+`.text`. Resultado: PASS 9/9.
+
+**F7 — sete tentativas até o GDSII.** Cada falha foi diagnosticada e
+registrada (ADR-009 a ADR-011):
+1. `pip install openlane` no Python do Windows → `signal.SIGKILL` não existe.
+2. No WSL → sem `sudo` para instalar `python3-tk`.
+3. Dentro do container, sem Yosys no PATH → blackbox das células quebrado.
+4. Yosys do Ubuntu sem a opção `-y` → descoberto o modo `--dockerized`.
+5. `--dockerized` sem TTY → `docker run -t`.
+6. Caminhos em Docker-dentro-do-Docker → cadeia disparada a partir do WSL.
+7. SDC com `remove_from_collection` (não existe no OpenSTA) → corrigido.
+
+Resultado do baseline (40 ns): **DRC 0, LVS 0, timing fechado em todos os
+corners**, die de 0,68 mm², folga de setup de 11,57 ns no pior corner.
+
+**Notebook** Jupyter ponta a ponta com saídas reais embutidas.
+
+## Sessão 2 — 16/09/2026: consolidação
+
+- `.gitignore` para não versionar os ~2 GB do run do OpenLane nem os GDS.
+- Commit do F7.
+
+## Sessão 3 — 25/09/2026: melhorias, dashboard, apresentação e entrega
+
+**Reorganização.** Guia oficial em `docs/reference/`; plano mestre e rascunho
+em `docs/planning/`; governança em `docs/governance/`; notebooks em
+`notebooks/`; histórico e changelog nesta pasta `versioning/`. Pastas vazias
+receberam função (CI, waveforms, cobertura, relatórios) ou foram removidas.
+
+**Incidente (transparência).** Ao limpar a cópia de 2,2 GB do run baseline
+de dentro da pasta do Google Drive, a verificação de segurança ("a cópia
+existe no espelho local?") falhou — o espelho em `C:/tmp` tinha sido limpo
+entre sessões —, mas o comando de remoção estava numa linha separada e
+executou mesmo assim. Perderam-se os **arquivos intermediários** do run
+baseline (logs por etapa, DEFs, relatórios de timing). As **evidências
+finais foram preservadas** (GDSII, netlist, `metrics.json`, config e imagem
+do layout), e o run é reproduzível com `bash scripts/run_openlane.sh`.
+Lição aplicada: `sync_mirror.sh` não copia mais runs do OpenLane para a pasta
+sincronizada, e checagens de segurança passaram a ser encadeadas com `&&`.
+
+**Obstáculo de ambiente #2.** Após reiniciar o Docker Desktop, a integração
+com o WSL não subiu (socket só para root, sem `sudo`). Descoberta uma rota
+melhor: o caminho `/run/desktop/mnt/host/c/...` funciona como bind mount em
+todos os níveis de container direto do Windows, sem WSL (ADR-012).
+
+**Modelo de referência + teste diferencial randomizado** (seção 7.4 do plano,
+risco R-04). Simulador de instruções em Python escrito a partir da
+especificação (`tools/iss/`) e gerador de programas aleatórios com assinatura
+em memória. 20 programas × 200 instruções: idênticos ao RTL.
+
+**Teste de mutação — a verificação verificando a si mesma.** 13 bugs
+realistas injetados no RTL. Primeira medição: um `sed` que não aplicava deu
+um falso "0 detectados"; refeito em Python com substituição verificada.
+Resultado real 12/13, e o sobrevivente revelou uma **lacuna no gerador**:
+o bit 11 do imediato de branch nunca era exercitado (só saltos curtos para
+frente). Solução: laços com contagem regressiva (branch para trás). Em
+seguida o `LH sem sign-extend` passou a escapar — segunda lacuna: os loads
+quase sempre liam zero. Solução: preencher a janela de dados com valores
+aleatórios. **Resultado final: 13/13 (100%).**
+
+**F8 — otimização física.** Pela folga do baseline, o caminho crítico no
+pior corner cabia em ~28 ns. Nova rodada a 30 ns (33,3 MHz) com reparo de
+slew/capacitância depois do roteamento global (`config_opt30.json`); o SDC
+passou a ler `CLOCK_PERIOD` da configuração.
+
+**F9 — simulação gate-level.** A netlist pós-layout (células
+`sky130_fd_sc_hd` com modelos funcionais) roda o firmware e 10 programas
+aleatórios dentro do mesmo SoC: resultado idêntico ao modelo de referência.
+
+**Infraestrutura.** Scripts portáveis (`scripts/_env.sh`: Windows com
+espelho, Linux com Docker, ou nativo), CI no GitHub Actions, waveforms em SVG
+(`tools/vcd2svg.py`), agregador de evidências (`tools/build_reports.py`),
+dashboard HTML (`tools/build_dashboard.py`), notebooks por etapa
+(`tools/make_notebooks.py`), apresentação e roteiro do vídeo gerados dos
+números reais (`tools/deck/`).

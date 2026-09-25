@@ -1,0 +1,31 @@
+{
+  "DESIGN_NAME": "rv32_core",
+  "VERILOG_FILES": [
+    "dir::../../rtl/core/regfile.sv",
+    "dir::../../rtl/core/alu.sv",
+    "dir::../../rtl/core/imm_gen.sv",
+    "dir::../../rtl/core/branch_cmp.sv",
+    "dir::../../rtl/core/mult_unit.sv",
+    "dir::../../rtl/core/crc_unit.sv",
+    "dir::../../rtl/core/lsu.sv",
+    "dir::../../rtl/core/control_unit.sv",
+    "dir::../../rtl/core/rv32_core.sv"
+  ],
+  "VERILOG_INCLUDE_DIRS": [
+    "dir::../../rtl/core"
+  ],
+  "CLOCK_PORT": "clk_i",
+  "CLOCK_NET": "clk_i",
+  "CLOCK_PERIOD": 30,
+  "FP_SIZING": "relative",
+  "FP_CORE_UTIL": 35,
+  "PL_TARGET_DENSITY_PCT": 45,
+  "PDK": "sky130A",
+  "STD_CELL_LIBRARY": "sky130_fd_sc_hd",
+  "SYNTH_STRATEGY": "AREA 0",
+  "RUN_HEURISTIC_DIODE_INSERTION": true,
+  "RUN_POST_GRT_DESIGN_REPAIR": true,
+  "RUN_POST_GRT_RESIZER_TIMING": true,
+  "GRT_ANTENNA_ITERS": 5,
+  "FALLBACK_SDC_FILE": "dir::../constraints/base.sdc"
+}

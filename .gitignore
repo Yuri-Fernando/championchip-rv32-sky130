@@ -11,9 +11,9 @@ firmware/build/*
 # em docs/evidence/openlane/run_best/.
 openlane/runs/
 !openlane/runs/.gitkeep
-docs/evidence/openlane/run_best/*.gds
-docs/evidence/openlane/run_best/*.nl.v
-docs/evidence/openlane/run_best/*.gl.v
+docs/evidence/openlane/*/*.gds
+docs/evidence/openlane/*/*.nl.v
+docs/evidence/openlane/*/*.gl.v
 
 # SO/editor
 .DS_Store
@@ -22,3 +22,11 @@ Thumbs.db
 
 # Mirror local (fora do repo, mas por seguranca)
 /tmp_mirror/
+
+# Saidas intermediarias de simulacao (regeneradas pelos scripts)
+build/
+
+# Pacote de entrega (gerado)
+dist/
+__pycache__/
+*.pyc

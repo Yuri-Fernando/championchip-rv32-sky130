@@ -1,0 +1,6 @@
+netlist: docs/evidence/openlane/run_best/rv32_core.nl.v (5.9M)
+==== GL 1. firmware de smoke-test sobre a netlist ====
+PASS  gl/firmware
+==== GL 2. diferencial randomizado sobre a netlist (10 programas) ====
+PASS  gl/random (10/10 programas identicos ao modelo de referencia)
+==== GL RESULTADO: NETLIST EQUIVALENTE AO MODELO ====

@@ -1,0 +1,71 @@
+%Warning-UNUSEDSIGNAL: rtl/top/chip_top.sv:31:26: Signal is not used: 'uart_rx_i'
+                                                : ... note: In instance 'chip_top'
+   31 |     input  logic         uart_rx_i
+      |                          ^~~~~~~~~
+                       ... For warning description see https://verilator.org/warn/UNUSEDSIGNAL?v=5.020
+                       ... Use "/* verilator lint_off UNUSEDSIGNAL */" and lint_on around source to disable this message.
+%Warning-UNUSEDSIGNAL: rtl/top/chip_top.sv:34:18: Signal is not used: 'pc_dbg'
+                                                : ... note: In instance 'chip_top'
+   34 |     logic [31:0] pc_dbg, halt_dbg_bit;
+      |                  ^~~~~~
+%Warning-UNUSEDSIGNAL: rtl/top/chip_top.sv:34:26: Signal is not driven, nor used: 'halt_dbg_bit'
+                                                : ... note: In instance 'chip_top'
+   34 |     logic [31:0] pc_dbg, halt_dbg_bit;
+      |                          ^~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: rtl/top/chip_top.sv:35:18: Signal is not used: 'state_dbg'
+                                                : ... note: In instance 'chip_top'
+   35 |     logic [3:0]  state_dbg;
+      |                  ^~~~~~~~~
+%Warning-UNUSEDSIGNAL: rtl/top/chip_top.sv:36:19: Signal is not used: 'halt'
+                                                : ... note: In instance 'chip_top'
+   36 |     logic         halt, illegal;
+      |                   ^~~~
+%Warning-UNUSEDSIGNAL: rtl/top/chip_top.sv:36:25: Signal is not used: 'illegal'
+                                                : ... note: In instance 'chip_top'
+   36 |     logic         halt, illegal;
+      |                         ^~~~~~~
+%Warning-UNUSEDSIGNAL: rtl/top/soc_top.sv:32:19: Signal is not used: 'addr_in_range'
+                                               : ... note: In instance 'chip_top.u_soc'
+   32 |     logic         addr_in_range;
+      |                   ^~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: rtl/core/rv32_core.sv:56:19: Signal is not used: 'alu_zero'
+                                                  : ... note: In instance 'chip_top.u_soc.u_core'
+   56 |     logic         alu_zero;
+      |                   ^~~~~~~~
+%Warning-UNUSEDSIGNAL: rtl/core/rv32_core.sv:60:19: Signal is not used: 'crc_blocked'
+                                                  : ... note: In instance 'chip_top.u_soc.u_core'
+   60 |     logic         crc_blocked;
+      |                   ^~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: rtl/core/rv32_core.sv:64:19: Signal is not used: 'lsu_misaligned'
+                                                  : ... note: In instance 'chip_top.u_soc.u_core'
+   64 |     logic         lsu_misaligned;
+      |                   ^~~~~~~~~~~~~~
+%Warning-UNUSEDSIGNAL: rtl/core/control_unit.sv:21:26: Bits of signal are not used: 'instr_i'[19:15]
+                                                     : ... note: In instance 'chip_top.u_soc.u_core.u_ctrl'
+   21 |     input  logic [31:0]  instr_i,         
+      |                          ^~~~~~~
+%Warning-UNUSEDSIGNAL: rtl/core/control_unit.sv:81:17: Signal is not used: 'rd_addr'
+                                                     : ... note: In instance 'chip_top.u_soc.u_core.u_ctrl'
+   81 |     logic [4:0] rd_addr;
+      |                 ^~~~~~~
+%Warning-UNUSEDPARAM: rtl/core/crc_unit.sv:32:22: Parameter is not used: 'INIT'
+                                                : ... note: In instance 'chip_top.u_soc.u_core.u_crc'
+   32 |     parameter [31:0] INIT = 32'hFFFFFFFF,  
+      |                      ^~~~
+%Warning-UNUSEDSIGNAL: rtl/core/imm_gen.sv:8:25: Bits of signal are not used: 'instr_i'[6:0]
+                                               : ... note: In instance 'chip_top.u_soc.u_core.u_imm_gen'
+    8 |     input  logic [31:0] instr_i,
+      |                         ^~~~~~~
+%Warning-UNUSEDSIGNAL: rtl/core/mult_unit.sv:21:25: Bits of signal are not used: 'product_ss'[64]
+                                                  : ... note: In instance 'chip_top.u_soc.u_core.u_mult'
+   21 |     logic signed [64:0] product_ss;  
+      |                         ^~~~~~~~~~
+%Warning-UNUSEDSIGNAL: rtl/core/mult_unit.sv:22:25: Bits of signal are not used: 'product_su'[64,31:0]
+                                                  : ... note: In instance 'chip_top.u_soc.u_core.u_mult'
+   22 |     logic signed [64:0] product_su;  
+      |                         ^~~~~~~~~~
+%Warning-UNUSEDSIGNAL: rtl/core/mult_unit.sv:23:25: Bits of signal are not used: 'product_uu'[64,31:0]
+                                                  : ... note: In instance 'chip_top.u_soc.u_core.u_mult'
+   23 |     logic signed [64:0] product_uu;  
+      |                         ^~~~~~~~~~
+%Error: Exiting due to 17 warning(s)

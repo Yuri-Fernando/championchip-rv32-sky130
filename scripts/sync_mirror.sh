@@ -22,13 +22,20 @@ if [ "$DIR" = "to" ]; then
     mkdir -p "$MIRROR/$d"
     cp -r "$PROJDIR/$d/." "$MIRROR/$d/" 2>/dev/null || true
   done
+  # netlists gate-level (entrada da simulacao F9), se ja existirem
+  for nl in "$PROJDIR"/docs/evidence/openlane/*/*.nl.v; do
+    [ -f "$nl" ] || continue
+    rel="${nl#"$PROJDIR"/}"
+    mkdir -p "$MIRROR/$(dirname "$rel")"
+    cp -u "$nl" "$MIRROR/$rel"
+  done
   echo "Sincronizado: projeto -> $MIRROR"
 elif [ "$DIR" = "from" ]; then
   mkdir -p "$PROJDIR/docs/evidence" "$PROJDIR/reports"
-  [ -d "$MIRROR/docs/evidence" ] && cp -r "$MIRROR/docs/evidence/." "$PROJDIR/docs/evidence/" 2>/dev/null || true
-  [ -d "$MIRROR/reports" ] && cp -r "$MIRROR/reports/." "$PROJDIR/reports/" 2>/dev/null || true
-  [ -d "$MIRROR/openlane/runs" ] && { mkdir -p "$PROJDIR/openlane/runs"; cp -r "$MIRROR/openlane/runs/." "$PROJDIR/openlane/runs/" 2>/dev/null || true; }
-  [ -d "$MIRROR/firmware/build" ] && cp -r "$MIRROR/firmware/build/." "$PROJDIR/firmware/build/" 2>/dev/null || true
+  [ -d "$MIRROR/docs/evidence" ] && cp -ru "$MIRROR/docs/evidence/." "$PROJDIR/docs/evidence/" 2>/dev/null || true
+  [ -d "$MIRROR/reports" ] && cp -ru "$MIRROR/reports/." "$PROJDIR/reports/" 2>/dev/null || true
+  [ -d "$MIRROR/firmware/build" ] && cp -ru "$MIRROR/firmware/build/." "$PROJDIR/firmware/build/" 2>/dev/null || true
+  # runs completos do OpenLane (GBs) NUNCA voltam para a pasta sincronizada
   echo "Sincronizado: $MIRROR -> projeto (evidencias/artefatos)"
 else
   echo "Uso: $0 [to|from]"; exit 1

@@ -89,3 +89,43 @@ BLOCKED-XICRC — ver SPEC_GAPS.md SG-01.
   daemon real, não pelo container que pediu o mount) — contornado usando
   o path espelhado `/mnt/c/tmp/championchip-build` em todos os níveis,
   disparado a partir do WSL — ADR-011.
+
+## [v0.8-verificacao-avancada] — 25/09/2026
+
+### Adicionado
+- **Modelo de referência independente** (`tools/iss/rv32_iss.py`): simulador de
+  instruções RV32I + Zmmul escrito a partir da especificação (ADR-013).
+- **Teste diferencial randomizado** (`tools/iss/gen_random_program.py`,
+  `tb/random/tb_random.sv`): 20 programas × 200 instruções idênticos ao modelo;
+  comparação pela memória, válida para RTL e gate-level.
+- **Teste de mutação** (`tools/mutation/run_mutation.py`): 13/13 bugs detectados
+  (ADR-014). Encontrou e corrigiu duas lacunas do gerador.
+- **F8 — otimização física**: rodada a 30 ns (33,3 MHz), DRC 0, LVS 0, timing
+  fechado nos 9 corners (`openlane/config/config_opt30.json`); SDC passa a ler
+  `CLOCK_PERIOD` da configuração.
+- **F9 — simulação gate-level** (`scripts/run_gls.sh`): firmware + 10 programas
+  aleatórios nas netlists baseline e otimizada, equivalentes ao modelo (ADR-015).
+- **Scripts portáveis** (`scripts/_env.sh`, `scripts/core/`): Windows (espelho),
+  Linux (Docker) e nativo (`CHAMPIONCHIP_NATIVE=1`).
+- **CI** no GitHub Actions (`.github/workflows/ci.yml`): lint, regressão e mutação a cada push.
+- Waveforms SVG (`tools/vcd2svg.py`), cobertura por instrução, relatórios
+  consolidados (`tools/build_reports.py` → `reports/`).
+- **Dashboard** HTML autocontido (`dashboard/index.html`).
+- **Notebooks** por etapa (`notebooks/00`–`03`), gerados por `tools/make_notebooks.py`.
+- **Apresentação** de 17 slides e **roteiro do vídeo** (~6:26) gerados dos números
+  reais (`tools/deck/`, `docs/video/`).
+- `versioning/HISTORICO.md` e `versioning/REGISTRO_MESTRE.md`.
+
+### Alterado
+- Reorganização: guia em `docs/reference/`, plano e rascunho em `docs/planning/`,
+  governança em `docs/governance/`, notebooks em `notebooks/`, changelog em `versioning/`.
+- `run_openlane.sh` parametrizado (config + rótulo) e sem dependência do WSL (ADR-012).
+- `sync_mirror.sh` não copia mais runs do OpenLane para a pasta sincronizada.
+
+### Incidente
+- Arquivos intermediários do run baseline apagados por engano; evidências finais
+  preservadas (KI-07, `versioning/HISTORICO.md`).
+
+### Pendente
+- Xicrc (SG-01), macro de memória (SG-02), pinagem (SG-03), reset (SG-04),
+  firmware oficial (SG-05); slew/cap no corner lento (KI-10); gravação do vídeo.

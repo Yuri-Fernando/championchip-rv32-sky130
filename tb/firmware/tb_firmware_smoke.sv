@@ -31,6 +31,16 @@ module tb_firmware_smoke;
 
     always #5 clk = ~clk;
 
+    // Waveform para evidencia/relatorio (+vcd): so o escopo do core (nivel 1),
+    // mantendo o arquivo pequeno. Nao usar na simulacao gate-level (a netlist
+    // plana tem dezenas de milhares de nets nesse escopo).
+    initial begin
+        if ($test$plusargs("vcd")) begin
+            $dumpfile("docs/evidence/waveforms/firmware_smoke.vcd");
+            $dumpvars(1, dut.u_core);
+        end
+    end
+
     initial begin
         logic [31:0] sig, testnum;
         rst = 1; repeat (2) @(negedge clk); rst = 0;

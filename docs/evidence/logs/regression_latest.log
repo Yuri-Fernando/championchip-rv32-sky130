@@ -1,16 +1,21 @@
-Sincronizado: projeto -> /c/tmp/championchip-build
-==== UNIT TESTS ====
-PASS  tb_alu
-PASS  tb_regfile
-PASS  tb_imm_gen
-PASS  tb_branch_cmp
-PASS  tb_mult_unit
-PASS  tb_lsu
-PASS  tb_address_decoder
-PASS  tb_crc_unit
-==== ISA TESTS ====
-PASS  tb_isa_alu
-PASS  tb_isa_mem_upper_sys
-PASS  tb_isa_branch_jump
-PASS  tb_isa_zmmul
-REGRESSION EXIT CODE: 0
+==== 1. TESTES UNITARIOS ====
+PASS  unit/tb_alu
+PASS  unit/tb_regfile
+PASS  unit/tb_imm_gen
+PASS  unit/tb_branch_cmp
+PASS  unit/tb_mult_unit
+PASS  unit/tb_lsu
+PASS  unit/tb_address_decoder
+PASS  unit/tb_crc_unit
+==== 2. TESTES DE ISA (dirigidos por instrucao) ====
+PASS  isa/tb_isa_alu
+PASS  isa/tb_isa_mem_upper_sys
+PASS  isa/tb_isa_branch_jump
+PASS  isa/tb_isa_zmmul
+==== 3. FIRMWARE (GCC RISC-V -> ELF -> hex -> simulacao) ====
+PASS  firmware/smoke_test
+==== 4. DIFERENCIAL RANDOMIZADO vs modelo de referencia (20 x 200 instr.) ====
+cobertura do corpo aleatorio: 40 instrucoes distintas, 3644 execucoes
+random: 20/20 programas identicos ao modelo de referencia
+PASS  random/diferencial (20/20)
+==== RESULTADO: TUDO PASSOU ====

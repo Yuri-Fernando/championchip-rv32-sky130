@@ -154,3 +154,50 @@ local em `C:/tmp/championchip-build`.
 consegue montar como bind mount. `scripts/sync_mirror.sh` espelha as fontes
 antes de cada rodada (mesmo princípio da regra `node-env.md` do usuário,
 aplicado a Docker em vez de npm).
+
+## ADR-012 — Bind mount via `/run/desktop/mnt/host/c` (substitui a rota pelo WSL do ADR-011)
+
+**Contexto:** após reiniciar o Docker Desktop, a integração com a distro WSL
+não recriou `/var/run/docker.sock` para o usuário (socket do proxy só para
+root, sem `sudo`), quebrando a rota do ADR-011.
+**Decisão:** montar o espelho usando o caminho que a própria VM do Docker
+Desktop usa para o drive C: — `/run/desktop/mnt/host/c/tmp/championchip-build`
+— no mesmo caminho dentro do container. Testado: funciona tanto no
+`docker run` externo (disparado do Git Bash) quanto nos containers aninhados
+que o OpenLane lança pelo `docker.sock`.
+**Consequência:** `scripts/run_openlane.sh` não depende mais do WSL.
+
+## ADR-013 — Modelo de referência independente + teste diferencial randomizado
+
+**Decisão:** escrever um simulador de instruções (ISS) em Python a partir da
+especificação RISC-V (`tools/iss/rv32_iss.py`), sem olhar o RTL, e comparar
+RTL × ISS em programas aleatórios (`tools/iss/gen_random_program.py`,
+`tb/random/tb_random.sv`).
+**Razão:** mitigação do risco R-04 (signedness em MUL/SLT/branch) prevista na
+seção 7.4 do Plano Mestre. Testes dirigidos só verificam os casos que quem os
+escreveu imaginou; o oráculo independente cobre combinações que ninguém
+imaginou.
+**Detalhes de projeto:** a comparação é feita pela memória (janela de dados +
+"assinatura" com o valor final de x1..x30), nunca pela hierarquia interna do
+núcleo — por isso o mesmo teste roda no RTL e na netlist gate-level. Todo
+salto para frente cai no início de um item e todo laço tem contador, então
+todo programa termina.
+
+## ADR-014 — Teste de mutação como métrica de qualidade da verificação
+
+**Decisão:** `tools/mutation/run_mutation.py` injeta 13 bugs realistas (troca
+signed/unsigned, sign-extend esquecido, bit de imediato, x0 gravável, link
+errado...) e exige que cada um seja detectado por pelo menos um programa.
+**Razão:** "todos os testes passam" não diz nada sobre a força dos testes.
+**Resultado:** revelou duas lacunas no gerador (bit 11 do imediato B nunca
+exercitado; loads lendo quase sempre zero), corrigidas. Score final 13/13.
+
+## ADR-015 — Simulação gate-level com modelos funcionais das células
+
+**Decisão:** `scripts/core/gls.sh` compila a netlist pós-layout com
+`primitives.v` + `sky130_fd_sc_hd.v` (`-DFUNCTIONAL -DUNIT_DELAY=#1`) no lugar
+do RTL do núcleo, dentro do mesmo `soc_top`, e roda firmware + programas
+aleatórios.
+**Razão:** fecha a fase F9 do Plano Mestre (risco R-09, divergência RTL × GL).
+Simulação funcional (sem atrasos SDF): verifica a lógica gerada pela síntese;
+o timing já é coberto pela STA multi-corner do OpenLane.

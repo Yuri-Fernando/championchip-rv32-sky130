@@ -1,0 +1,952 @@
+{
+  "generated": "2026-09-25",
+  "project": {
+    "name": "RV32I_Zmmul_Xicrc",
+    "competition": "ChampionCHIP eXperience - Fase 2",
+    "microarchitecture": "multicycle, FSM de 16 estados",
+    "pdk": "SkyWater SKY130 (sky130A / sky130_fd_sc_hd)",
+    "memory_map": {
+      "IMEM": "0x0040_0000 (ROM, ate 4 MB)",
+      "DMEM": "0x1001_0000 (SRAM sincrona, 8 kB)"
+    }
+  },
+  "isa": {
+    "total": 47,
+    "closed": 44,
+    "rv32i": 40,
+    "zmmul": 4,
+    "xicrc_blocked": 3,
+    "matrix": [
+      {
+        "num": "1",
+        "categoria": "ALU reg",
+        "instrucao": "ADD",
+        "testbench": "tb_isa_alu.sv",
+        "status": "PASS",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "2",
+        "categoria": "ALU reg",
+        "instrucao": "SUB",
+        "testbench": "tb_isa_alu.sv",
+        "status": "PASS",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "3",
+        "categoria": "ALU reg",
+        "instrucao": "SLL",
+        "testbench": "tb_isa_alu.sv",
+        "status": "PASS",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "4",
+        "categoria": "ALU reg",
+        "instrucao": "SLT",
+        "testbench": "tb_isa_alu.sv",
+        "status": "PASS",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "5",
+        "categoria": "ALU reg",
+        "instrucao": "SLTU",
+        "testbench": "tb_isa_alu.sv",
+        "status": "PASS",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "6",
+        "categoria": "ALU reg",
+        "instrucao": "XOR",
+        "testbench": "tb_isa_alu.sv",
+        "status": "PASS",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "7",
+        "categoria": "ALU reg",
+        "instrucao": "SRL",
+        "testbench": "tb_isa_alu.sv",
+        "status": "PASS",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "8",
+        "categoria": "ALU reg",
+        "instrucao": "SRA",
+        "testbench": "tb_isa_alu.sv",
+        "status": "PASS",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "9",
+        "categoria": "ALU reg",
+        "instrucao": "OR",
+        "testbench": "tb_isa_alu.sv",
+        "status": "PASS",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "10",
+        "categoria": "ALU reg",
+        "instrucao": "AND",
+        "testbench": "tb_isa_alu.sv",
+        "status": "PASS",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "11",
+        "categoria": "ALU imm",
+        "instrucao": "ADDI",
+        "testbench": "tb_isa_alu.sv",
+        "status": "PASS",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "12",
+        "categoria": "ALU imm",
+        "instrucao": "SLTI",
+        "testbench": "tb_isa_alu.sv",
+        "status": "PASS",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "13",
+        "categoria": "ALU imm",
+        "instrucao": "SLTIU",
+        "testbench": "tb_isa_alu.sv",
+        "status": "PASS",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "14",
+        "categoria": "ALU imm",
+        "instrucao": "XORI",
+        "testbench": "tb_isa_alu.sv",
+        "status": "PASS",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "15",
+        "categoria": "ALU imm",
+        "instrucao": "ORI",
+        "testbench": "tb_isa_alu.sv",
+        "status": "PASS",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "16",
+        "categoria": "ALU imm",
+        "instrucao": "ANDI",
+        "testbench": "tb_isa_alu.sv",
+        "status": "PASS",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "17",
+        "categoria": "ALU imm",
+        "instrucao": "SLLI",
+        "testbench": "tb_isa_alu.sv",
+        "status": "PASS",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "18",
+        "categoria": "ALU imm",
+        "instrucao": "SRLI",
+        "testbench": "tb_isa_alu.sv",
+        "status": "PASS",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "19",
+        "categoria": "ALU imm",
+        "instrucao": "SRAI",
+        "testbench": "tb_isa_alu.sv",
+        "status": "PASS",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "20",
+        "categoria": "Load",
+        "instrucao": "LB",
+        "testbench": "tb_isa_mem_upper_sys.sv",
+        "status": "PASS",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "21",
+        "categoria": "Load",
+        "instrucao": "LH",
+        "testbench": "tb_isa_mem_upper_sys.sv",
+        "status": "PASS",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "22",
+        "categoria": "Load",
+        "instrucao": "LW",
+        "testbench": "tb_isa_mem_upper_sys.sv",
+        "status": "PASS",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "23",
+        "categoria": "Load",
+        "instrucao": "LBU",
+        "testbench": "tb_isa_mem_upper_sys.sv",
+        "status": "PASS",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "24",
+        "categoria": "Load",
+        "instrucao": "LHU",
+        "testbench": "tb_isa_mem_upper_sys.sv",
+        "status": "PASS",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "25",
+        "categoria": "Store",
+        "instrucao": "SB",
+        "testbench": "tb_isa_mem_upper_sys.sv",
+        "status": "PASS",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "26",
+        "categoria": "Store",
+        "instrucao": "SH",
+        "testbench": "tb_isa_mem_upper_sys.sv",
+        "status": "PASS",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "27",
+        "categoria": "Store",
+        "instrucao": "SW",
+        "testbench": "tb_isa_mem_upper_sys.sv",
+        "status": "PASS",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "28",
+        "categoria": "Branch",
+        "instrucao": "BEQ",
+        "testbench": "tb_isa_branch_jump.sv",
+        "status": "PASS",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "29",
+        "categoria": "Branch",
+        "instrucao": "BNE",
+        "testbench": "tb_isa_branch_jump.sv",
+        "status": "PASS",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "30",
+        "categoria": "Branch",
+        "instrucao": "BLT",
+        "testbench": "tb_isa_branch_jump.sv",
+        "status": "PASS",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "31",
+        "categoria": "Branch",
+        "instrucao": "BGE",
+        "testbench": "tb_isa_branch_jump.sv",
+        "status": "PASS",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "32",
+        "categoria": "Branch",
+        "instrucao": "BLTU",
+        "testbench": "tb_isa_branch_jump.sv",
+        "status": "PASS",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "33",
+        "categoria": "Branch",
+        "instrucao": "BGEU",
+        "testbench": "tb_isa_branch_jump.sv",
+        "status": "PASS",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "34",
+        "categoria": "Jump",
+        "instrucao": "JAL",
+        "testbench": "tb_isa_branch_jump.sv",
+        "status": "PASS",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "35",
+        "categoria": "Jump",
+        "instrucao": "JALR",
+        "testbench": "tb_isa_branch_jump.sv",
+        "status": "PASS",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "36",
+        "categoria": "Upper imm",
+        "instrucao": "LUI",
+        "testbench": "tb_isa_mem_upper_sys.sv",
+        "status": "PASS",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "37",
+        "categoria": "Upper imm",
+        "instrucao": "AUIPC",
+        "testbench": "tb_isa_mem_upper_sys.sv",
+        "status": "PASS",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "38",
+        "categoria": "Sistema/sinc",
+        "instrucao": "FENCE",
+        "testbench": "tb_isa_mem_upper_sys.sv",
+        "status": "PASS (no-op verificado)",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "39",
+        "categoria": "Sistema/sinc",
+        "instrucao": "ECALL",
+        "testbench": "tb_isa_mem_upper_sys.sv",
+        "status": "PASS (halt_o)",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "40",
+        "categoria": "Sistema/sinc",
+        "instrucao": "EBREAK",
+        "testbench": "tb_isa_alu.sv, tb_isa_branch_jump.sv, tb_isa_zmmul.sv",
+        "status": "PASS (halt_o)",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "41",
+        "categoria": "Zmmul",
+        "instrucao": "MUL",
+        "testbench": "tb_isa_zmmul.sv",
+        "status": "PASS",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "42",
+        "categoria": "Zmmul",
+        "instrucao": "MULH",
+        "testbench": "tb_isa_zmmul.sv",
+        "status": "PASS",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "43",
+        "categoria": "Zmmul",
+        "instrucao": "MULHSU",
+        "testbench": "tb_isa_zmmul.sv",
+        "status": "PASS",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "44",
+        "categoria": "Zmmul",
+        "instrucao": "MULHU",
+        "testbench": "tb_isa_zmmul.sv",
+        "status": "PASS",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "45",
+        "categoria": "Xicrc",
+        "instrucao": "CRCB",
+        "testbench": "tb_crc_unit.sv",
+        "status": "BLOCKED-XICRC (estrutural apenas; sem oraculo oficial)",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "46",
+        "categoria": "Xicrc",
+        "instrucao": "CRCH",
+        "testbench": "tb_crc_unit.sv",
+        "status": "BLOCKED-XICRC (estrutural apenas; sem oraculo oficial)",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      },
+      {
+        "num": "47",
+        "categoria": "Xicrc",
+        "instrucao": "CRCW",
+        "testbench": "tb_crc_unit.sv",
+        "status": "BLOCKED-XICRC (estrutural apenas; sem oraculo oficial)",
+        "evidencia": "docs/evidence/logs/regression_latest.log"
+      }
+    ]
+  },
+  "verification": {
+    "regression": [
+      {
+        "suite": "unit",
+        "teste": "tb_alu",
+        "status": "PASS"
+      },
+      {
+        "suite": "unit",
+        "teste": "tb_regfile",
+        "status": "PASS"
+      },
+      {
+        "suite": "unit",
+        "teste": "tb_imm_gen",
+        "status": "PASS"
+      },
+      {
+        "suite": "unit",
+        "teste": "tb_branch_cmp",
+        "status": "PASS"
+      },
+      {
+        "suite": "unit",
+        "teste": "tb_mult_unit",
+        "status": "PASS"
+      },
+      {
+        "suite": "unit",
+        "teste": "tb_lsu",
+        "status": "PASS"
+      },
+      {
+        "suite": "unit",
+        "teste": "tb_address_decoder",
+        "status": "PASS"
+      },
+      {
+        "suite": "unit",
+        "teste": "tb_crc_unit",
+        "status": "PASS"
+      },
+      {
+        "suite": "isa",
+        "teste": "tb_isa_alu",
+        "status": "PASS"
+      },
+      {
+        "suite": "isa",
+        "teste": "tb_isa_mem_upper_sys",
+        "status": "PASS"
+      },
+      {
+        "suite": "isa",
+        "teste": "tb_isa_branch_jump",
+        "status": "PASS"
+      },
+      {
+        "suite": "isa",
+        "teste": "tb_isa_zmmul",
+        "status": "PASS"
+      },
+      {
+        "suite": "firmware",
+        "teste": "smoke_test",
+        "status": "PASS"
+      },
+      {
+        "suite": "random",
+        "teste": "20 programas x 200 instr",
+        "status": "PASS"
+      }
+    ],
+    "regression_pass": 14,
+    "mutation": [
+      {
+        "mutante": "ALU: SRA vira SRL",
+        "arquivo": "rtl/core/alu.sv",
+        "programas_que_detectaram": "8",
+        "programas_total": "20",
+        "status": "MORTO"
+      },
+      {
+        "mutante": "ALU: SLT vira SLTU",
+        "arquivo": "rtl/core/alu.sv",
+        "programas_que_detectaram": "14",
+        "programas_total": "20",
+        "status": "MORTO"
+      },
+      {
+        "mutante": "ALU: SUB vira ADD",
+        "arquivo": "rtl/core/alu.sv",
+        "programas_que_detectaram": "12",
+        "programas_total": "20",
+        "status": "MORTO"
+      },
+      {
+        "mutante": "MUL: MULHSU usa signed x signed",
+        "arquivo": "rtl/core/mult_unit.sv",
+        "programas_que_detectaram": "4",
+        "programas_total": "20",
+        "status": "MORTO"
+      },
+      {
+        "mutante": "MUL: MULHU usa signed x signed",
+        "arquivo": "rtl/core/mult_unit.sv",
+        "programas_que_detectaram": "7",
+        "programas_total": "20",
+        "status": "MORTO"
+      },
+      {
+        "mutante": "LSU: LB sem sign-extend",
+        "arquivo": "rtl/core/lsu.sv",
+        "programas_que_detectaram": "18",
+        "programas_total": "20",
+        "status": "MORTO"
+      },
+      {
+        "mutante": "LSU: LH sem sign-extend",
+        "arquivo": "rtl/core/lsu.sv",
+        "programas_que_detectaram": "15",
+        "programas_total": "20",
+        "status": "MORTO"
+      },
+      {
+        "mutante": "LSU: SH sempre na metade baixa",
+        "arquivo": "rtl/core/lsu.sv",
+        "programas_que_detectaram": "18",
+        "programas_total": "20",
+        "status": "MORTO"
+      },
+      {
+        "mutante": "BRANCH: BLTU vira BLT",
+        "arquivo": "rtl/core/branch_cmp.sv",
+        "programas_que_detectaram": "11",
+        "programas_total": "20",
+        "status": "MORTO"
+      },
+      {
+        "mutante": "BRANCH: BGE vira BGT",
+        "arquivo": "rtl/core/branch_cmp.sv",
+        "programas_que_detectaram": "4",
+        "programas_total": "20",
+        "status": "MORTO"
+      },
+      {
+        "mutante": "IMM: imediato B sem bit 11",
+        "arquivo": "rtl/core/imm_gen.sv",
+        "programas_que_detectaram": "19",
+        "programas_total": "20",
+        "status": "MORTO"
+      },
+      {
+        "mutante": "REGFILE: x0 gravavel",
+        "arquivo": "rtl/core/regfile.sv",
+        "programas_que_detectaram": "18",
+        "programas_total": "20",
+        "status": "MORTO"
+      },
+      {
+        "mutante": "CORE: link do JAL = PC atual (sem +4)",
+        "arquivo": "rtl/core/rv32_core.sv",
+        "programas_que_detectaram": "18",
+        "programas_total": "20",
+        "status": "MORTO"
+      }
+    ],
+    "mutation_killed": 13,
+    "gls": [
+      {
+        "teste": "firmware",
+        "status": "PASS"
+      },
+      {
+        "teste": "random 10 programas",
+        "status": "PASS"
+      }
+    ],
+    "random_coverage": [
+      {
+        "instrucao": "ADDI",
+        "execucoes": 387
+      },
+      {
+        "instrucao": "BNE",
+        "execucoes": 270
+      },
+      {
+        "instrucao": "SW",
+        "execucoes": 250
+      },
+      {
+        "instrucao": "SB",
+        "execucoes": 129
+      },
+      {
+        "instrucao": "SH",
+        "execucoes": 126
+      },
+      {
+        "instrucao": "LB",
+        "execucoes": 114
+      },
+      {
+        "instrucao": "JAL",
+        "execucoes": 105
+      },
+      {
+        "instrucao": "XOR",
+        "execucoes": 101
+      },
+      {
+        "instrucao": "SLTI",
+        "execucoes": 97
+      },
+      {
+        "instrucao": "LBU",
+        "execucoes": 95
+      },
+      {
+        "instrucao": "ORI",
+        "execucoes": 92
+      },
+      {
+        "instrucao": "SLTIU",
+        "execucoes": 89
+      },
+      {
+        "instrucao": "LHU",
+        "execucoes": 86
+      },
+      {
+        "instrucao": "LH",
+        "execucoes": 86
+      },
+      {
+        "instrucao": "LW",
+        "execucoes": 80
+      },
+      {
+        "instrucao": "LUI",
+        "execucoes": 79
+      },
+      {
+        "instrucao": "ADD",
+        "execucoes": 75
+      },
+      {
+        "instrucao": "XORI",
+        "execucoes": 71
+      },
+      {
+        "instrucao": "ANDI",
+        "execucoes": 71
+      },
+      {
+        "instrucao": "OR",
+        "execucoes": 68
+      },
+      {
+        "instrucao": "MULHSU",
+        "execucoes": 68
+      },
+      {
+        "instrucao": "SRLI",
+        "execucoes": 66
+      },
+      {
+        "instrucao": "MULH",
+        "execucoes": 66
+      },
+      {
+        "instrucao": "SLL",
+        "execucoes": 65
+      },
+      {
+        "instrucao": "SRL",
+        "execucoes": 63
+      },
+      {
+        "instrucao": "AND",
+        "execucoes": 63
+      },
+      {
+        "instrucao": "SRAI",
+        "execucoes": 63
+      },
+      {
+        "instrucao": "SLLI",
+        "execucoes": 61
+      },
+      {
+        "instrucao": "MULHU",
+        "execucoes": 59
+      },
+      {
+        "instrucao": "SLTU",
+        "execucoes": 59
+      },
+      {
+        "instrucao": "BEQ",
+        "execucoes": 58
+      },
+      {
+        "instrucao": "BLT",
+        "execucoes": 57
+      },
+      {
+        "instrucao": "AUIPC",
+        "execucoes": 56
+      },
+      {
+        "instrucao": "MUL",
+        "execucoes": 55
+      },
+      {
+        "instrucao": "BGE",
+        "execucoes": 55
+      },
+      {
+        "instrucao": "SRA",
+        "execucoes": 54
+      },
+      {
+        "instrucao": "BGEU",
+        "execucoes": 53
+      },
+      {
+        "instrucao": "SLT",
+        "execucoes": 52
+      },
+      {
+        "instrucao": "BLTU",
+        "execucoes": 50
+      },
+      {
+        "instrucao": "SUB",
+        "execucoes": 50
+      }
+    ]
+  },
+  "physical": [
+    {
+      "label": "baseline",
+      "dir": "docs/evidence/openlane/run_best",
+      "clock_period_ns": 40.0,
+      "clock_mhz": 25.0,
+      "fmax_mhz_worst_corner": 35.2,
+      "setup_worst_slack_ns": 11.568808460876683,
+      "setup_ws_by_corner": {
+        "nom_tt_025C_1v80": 25.7232429304604,
+        "min_tt_025C_1v80": 26.118373980634825,
+        "max_tt_025C_1v80": 25.116826662761643,
+        "nom_ss_100C_1v60": 12.16598944910621,
+        "min_ss_100C_1v60": 12.848742877780317,
+        "max_ss_100C_1v60": 11.568808460876683,
+        "nom_ff_n40C_1v95": 30.972892682841803,
+        "min_ff_n40C_1v95": 31.323488689436083,
+        "max_ff_n40C_1v95": 30.523563207607605
+      },
+      "hold_worst_slack_ns": 0.28153280503739286,
+      "setup_tns": 0,
+      "hold_tns": 0,
+      "drc_klayout": 0,
+      "drc_magic": 0,
+      "lvs_errors": 0,
+      "antenna_violations": 2,
+      "max_slew_violations": 7486,
+      "max_cap_violations": 143,
+      "core_area_um2": 653656,
+      "die_area_um2": 681917,
+      "die_w_um": 820.44,
+      "die_h_um": 831.16,
+      "stdcell_area_um2": 259760,
+      "utilization": 0.397396,
+      "instances": 46827,
+      "power_total_w": 0.03192472830414772,
+      "wirelength_um": 999105,
+      "config": {
+        "DESIGN_NAME": "rv32_core",
+        "CLOCK_PORT": "clk_i",
+        "CLOCK_NET": "clk_i",
+        "CLOCK_PERIOD": 40,
+        "FP_SIZING": "relative",
+        "FP_CORE_UTIL": 35,
+        "PL_TARGET_DENSITY_PCT": 45,
+        "PDK": "sky130A",
+        "STD_CELL_LIBRARY": "sky130_fd_sc_hd",
+        "SYNTH_STRATEGY": "AREA 0",
+        "RUN_HEURISTIC_DIODE_INSERTION": true,
+        "DIODE_INSERTION_STRATEGY": 4,
+        "FALLBACK_SDC_FILE": "dir::../constraints/base.sdc",
+        "pdk::sky130A": {
+          "scl::sky130_fd_sc_hd": {
+            "CLOCK_PERIOD": 40
+          }
+        }
+      }
+    },
+    {
+      "label": "opt30",
+      "dir": "docs/evidence/openlane/run_opt30",
+      "clock_period_ns": 30.0,
+      "clock_mhz": 33.3,
+      "fmax_mhz_worst_corner": 34.7,
+      "setup_worst_slack_ns": 1.1448264882345778,
+      "setup_ws_by_corner": {
+        "nom_tt_025C_1v80": 15.298527322422876,
+        "min_tt_025C_1v80": 15.750849959016115,
+        "max_tt_025C_1v80": 14.89829457526141,
+        "nom_ss_100C_1v60": 1.9713191637044991,
+        "min_ss_100C_1v60": 2.799220490187904,
+        "max_ss_100C_1v60": 1.1448264882345778,
+        "nom_ff_n40C_1v95": 20.73210994894195,
+        "min_ff_n40C_1v95": 21.020355828709903,
+        "max_ff_n40C_1v95": 20.491221743851778
+      },
+      "hold_worst_slack_ns": 0.2831624459501783,
+      "setup_tns": 0,
+      "hold_tns": 0,
+      "drc_klayout": 0,
+      "drc_magic": 0,
+      "lvs_errors": 0,
+      "antenna_violations": 2,
+      "max_slew_violations": 7620,
+      "max_cap_violations": 140,
+      "core_area_um2": 653656,
+      "die_area_um2": 681917,
+      "die_w_um": 820.44,
+      "die_h_um": 831.16,
+      "stdcell_area_um2": 259752,
+      "utilization": 0.397383,
+      "instances": 46826,
+      "power_total_w": 0.04264897108078003,
+      "wirelength_um": 998369,
+      "config": {
+        "DESIGN_NAME": "rv32_core",
+        "CLOCK_PORT": "clk_i",
+        "CLOCK_NET": "clk_i",
+        "CLOCK_PERIOD": 30,
+        "FP_SIZING": "relative",
+        "FP_CORE_UTIL": 35,
+        "PL_TARGET_DENSITY_PCT": 45,
+        "PDK": "sky130A",
+        "STD_CELL_LIBRARY": "sky130_fd_sc_hd",
+        "SYNTH_STRATEGY": "AREA 0",
+        "RUN_HEURISTIC_DIODE_INSERTION": true,
+        "RUN_POST_GRT_DESIGN_REPAIR": true,
+        "RUN_POST_GRT_RESIZER_TIMING": true,
+        "GRT_ANTENNA_ITERS": 5,
+        "FALLBACK_SDC_FILE": "dir::../constraints/base.sdc"
+      }
+    }
+  ],
+  "phases": [
+    {
+      "id": "F0",
+      "name": "Freeze de especificação",
+      "status": "done",
+      "note": "Inventário do guia + 5 lacunas documentadas"
+    },
+    {
+      "id": "F1",
+      "name": "Skeleton e automação",
+      "status": "done",
+      "note": "14 módulos RTL, Docker, scripts portáveis, CI"
+    },
+    {
+      "id": "F2",
+      "name": "Módulos unitários",
+      "status": "done",
+      "note": "8 testbenches unitários"
+    },
+    {
+      "id": "F3",
+      "name": "FSM + core integrado",
+      "status": "done",
+      "note": "FSM de 16 estados, datapath multicycle"
+    },
+    {
+      "id": "F4",
+      "name": "Fechamento RV32I",
+      "status": "done",
+      "note": "40/40 instruções com teste dirigido"
+    },
+    {
+      "id": "F5",
+      "name": "Zmmul + Xicrc",
+      "status": "partial",
+      "note": "Zmmul 4/4; Xicrc bloqueada por especificação (SG-01)"
+    },
+    {
+      "id": "F6",
+      "name": "Firmware",
+      "status": "partial",
+      "note": "Firmware autoral PASS; oficial indisponível (SG-05)"
+    },
+    {
+      "id": "F7",
+      "name": "OpenLane baseline",
+      "status": "done",
+      "note": "GDSII com DRC 0, LVS 0, timing fechado"
+    },
+    {
+      "id": "F8",
+      "name": "Otimização física",
+      "status": "done",
+      "note": "40 ns → 30 ns (33,3 MHz), timing fechado; slew/cap do corner lento pendente"
+    },
+    {
+      "id": "F9",
+      "name": "Gate-level regression",
+      "status": "done",
+      "note": "Netlists baseline e 30 ns equivalentes ao modelo de referência"
+    },
+    {
+      "id": "F10",
+      "name": "Relatório / vídeo / submissão",
+      "status": "partial",
+      "note": "Relatório, dashboard, notebooks, slides e roteiro prontos; vídeo a gravar"
+    }
+  ],
+  "spec_gaps": [
+    {
+      "id": "SG-01",
+      "title": "Semântica matemática da extensão Xicrc (CRCB/CRCH/CRCW)",
+      "status": "BLOCKED-XICRC (não fechado)",
+      "level": "blocked"
+    },
+    {
+      "id": "SG-02",
+      "title": "Estratégia física de memória (IMEM até 4 MB / DMEM 8 kB)",
+      "status": "Mitigado para simulação; pendente para fechamento físico",
+      "level": "partial"
+    },
+    {
+      "id": "SG-03",
+      "title": "Pinout físico (chip_top): GPIO/serial",
+      "status": "Reservado, não implementado (tie-off seguro)",
+      "level": "partial"
+    },
+    {
+      "id": "SG-04",
+      "title": "Polaridade do reset",
+      "status": "Assumido ativo-alto (padrão OpenLane/SKY130); não confirmado",
+      "level": "partial"
+    },
+    {
+      "id": "SG-05",
+      "title": "Firmware oficial da competição",
+      "status": "Não disponível neste repositório",
+      "level": "blocked"
+    }
+  ]
+}

@@ -60,4 +60,4 @@ a leitura só fica disponível um ciclo depois do `oe`.
 
 - [`../../README.md`](../../README.md) — visão geral e status
 - [`../submission/RELATORIO.md`](../submission/RELATORIO.md) — relatório técnico completo
-- [`../ChampionCHIP_EndToEnd.ipynb`](../ChampionCHIP_EndToEnd.ipynb) — notebook executável
+- [`../../notebooks/`](../../notebooks/) — notebooks executáveis (pipeline completo e por etapa)

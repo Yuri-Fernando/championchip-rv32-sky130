@@ -1,0 +1,15 @@
+suite,teste,status
+unit,tb_alu,PASS
+unit,tb_regfile,PASS
+unit,tb_imm_gen,PASS
+unit,tb_branch_cmp,PASS
+unit,tb_mult_unit,PASS
+unit,tb_lsu,PASS
+unit,tb_address_decoder,PASS
+unit,tb_crc_unit,PASS
+isa,tb_isa_alu,PASS
+isa,tb_isa_mem_upper_sys,PASS
+isa,tb_isa_branch_jump,PASS
+isa,tb_isa_zmmul,PASS
+firmware,smoke_test,PASS
+random,20 programas x 200 instr,PASS

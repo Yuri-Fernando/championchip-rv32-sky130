@@ -1,0 +1,45 @@
+# =============================================================================
+# CI - reexecuta toda a verificacao RTL a cada push/PR, com as ferramentas
+# instaladas nativamente no runner (CHAMPIONCHIP_NATIVE=1, sem Docker).
+# O fluxo fisico (OpenLane, ~50 min e varios GB de PDK) NAO roda no CI.
+# =============================================================================
+name: verificacao-rtl
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  rtl:
+    runs-on: ubuntu-24.04
+    env:
+      CHAMPIONCHIP_NATIVE: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar toolchain (Icarus Verilog, Verilator, GCC RISC-V)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            iverilog verilator gcc-riscv64-unknown-elf binutils-riscv64-unknown-elf python3
+
+      - name: Lint sintetizavel (Verilator)
+        run: bash scripts/run_lint.sh
+
+      - name: Regressao (unit + ISA + firmware + diferencial randomizado)
+        run: bash scripts/run_regression.sh
+
+      - name: Teste de mutacao (forca da verificacao)
+        run: bash scripts/run_mutation.sh
+
+      - name: Publicar evidencias
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: evidencias-verificacao
+          path: |
+            reports/
+            docs/evidence/logs/
+            docs/evidence/isa/
+            docs/evidence/waveforms/

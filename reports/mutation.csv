@@ -1,0 +1,14 @@
+mutante,arquivo,programas_que_detectaram,programas_total,status
+ALU: SRA vira SRL,rtl/core/alu.sv,8,20,MORTO
+ALU: SLT vira SLTU,rtl/core/alu.sv,14,20,MORTO
+ALU: SUB vira ADD,rtl/core/alu.sv,12,20,MORTO
+MUL: MULHSU usa signed x signed,rtl/core/mult_unit.sv,4,20,MORTO
+MUL: MULHU usa signed x signed,rtl/core/mult_unit.sv,7,20,MORTO
+LSU: LB sem sign-extend,rtl/core/lsu.sv,18,20,MORTO
+LSU: LH sem sign-extend,rtl/core/lsu.sv,15,20,MORTO
+LSU: SH sempre na metade baixa,rtl/core/lsu.sv,18,20,MORTO
+BRANCH: BLTU vira BLT,rtl/core/branch_cmp.sv,11,20,MORTO
+BRANCH: BGE vira BGT,rtl/core/branch_cmp.sv,4,20,MORTO
+IMM: imediato B sem bit 11,rtl/core/imm_gen.sv,19,20,MORTO
+REGFILE: x0 gravavel,rtl/core/regfile.sv,18,20,MORTO
+CORE: link do JAL = PC atual (sem +4),rtl/core/rv32_core.sv,18,20,MORTO

@@ -32,7 +32,7 @@ macro/template oficial da organização (`SPEC_GAPS.md` SG-02).
 ## 2. Instruções (matriz completa — 47 alvo)
 
 **44/47 fechadas** (RV32I 40/40 + Zmmul 4/4), cada uma com teste dirigido e
-scoreboard. Ver [`TEST_MATRIX.csv`](../../TEST_MATRIX.csv) para a lista
+scoreboard. Ver [`TEST_MATRIX.csv`](../governance/TEST_MATRIX.csv) para a lista
 completa com testbench e evidência.
 
 Xicrc (CRCB/CRCH/CRCW, 3 instruções) está **BLOCKED-XICRC**: o guia define
@@ -78,14 +78,51 @@ fases lógicas Fetch/Decode/Execute/Write Back.
 | `address_decoder.sv` | Roteamento IMEM/DMEM | `tb_address_decoder.sv` | PASS |
 | `control_unit.sv` + `rv32_core.sv` | Decode+FSM+datapath | `tb_isa_*.sv` (4 arquivos) | PASS (44/44 instr. cobertas) |
 
-**Regressão completa:** 12/12 testbenches PASS (ver
-`docs/evidence/logs/regression_latest.log`).
+**Regressão completa:** 14/14 suítes PASS — 8 unitárias, 4 de ISA, firmware
+e o teste diferencial randomizado (ver `docs/evidence/logs/regression_latest.log`
+e `reports/regression_summary.csv`).
 
-**Bugs reais encontrados e corrigidos pela verificação dirigida** (não
-"quase completo" — ver `DECISIONS.md` ADR-003):
+**Bugs reais encontrados e corrigidos pela verificação dirigida** (ver
+`docs/governance/DECISIONS.md` ADR-003):
 1. PC atualizado duas vezes em JAL/JALR (risco R-07 do Plano Mestre,
    materializado na prática).
 2. Valor de link (rd = PC+4) capturado a partir do PC já saltado.
+
+### 4.1 Teste diferencial randomizado (seção 7.4 do Plano Mestre)
+
+Um simulador de instruções em Python (`tools/iss/rv32_iss.py`), escrito a partir
+da especificação RISC-V e sem consultar o RTL, serve de oráculo independente.
+O gerador (`tools/iss/gen_random_program.py`) cria programas com valores
+iniciais aleatórios e extremos (0, −1, INT_MIN, INT_MAX), instruções de ALU,
+Zmmul, LUI/AUIPC, loads/stores alinhados, branches e JAL para frente e laços
+com branch para trás. Cada programa termina gravando x1..x30 na memória
+("assinatura"); a comparação RTL × modelo é feita sobre 96 palavras da DMEM.
+
+**Resultado:** 20 programas × 200 instruções, idênticos ao modelo, cobrindo
+40 instruções distintas no corpo aleatório (`docs/evidence/isa/random_coverage.csv`).
+JALR, FENCE e ECALL têm testes dirigidos próprios.
+
+### 4.2 Teste de mutação
+
+`tools/mutation/run_mutation.py` injeta, um de cada vez, 13 bugs realistas no
+RTL (SRA→SRL, SLT→SLTU, SUB→ADD, MULHSU/MULHU com sinal errado, LB/LH sem
+sign-extend, SH na metade errada, BLTU→BLT, BGE→BGT, bit 11 do imediato B,
+x0 gravável, link do JAL sem +4) e verifica se algum programa aleatório
+diverge do modelo.
+
+**Resultado final: 13/13 mutantes detectados.** A primeira medição deu 12/13
+e revelou duas lacunas no próprio gerador, ambas corrigidas: (a) só havia
+saltos curtos para frente, então o bit 11 do imediato de branch nunca era
+exercitado; (b) a memória começava zerada e quase todo load lia zero, então o
+sign-extend de LB/LH não era testado (ADR-014).
+
+### 4.3 Simulação gate-level (F9)
+
+A netlist pós-layout do OpenLane (`rv32_core.nl.v`, células `sky130_fd_sc_hd`
+com modelos funcionais) substitui o RTL do núcleo dentro do mesmo SoC. O
+firmware e 10 programas aleatórios produzem resultado idêntico ao modelo de
+referência, **nas duas netlists** (baseline e otimizada) — ver
+`docs/evidence/logs/gls_baseline.log` e `gls_opt30.log` (ADR-015).
 
 ## 5. Firmware
 
@@ -115,30 +152,41 @@ clock relaxado (40 ns) e utilização de core 35% na primeira rodada,
 priorizando robustez/completude do fluxo sobre recorde de área (seção 10.1
 do Plano Mestre).
 
-**Resultado (fluxo completo, `sky130A`/`sky130_fd_sc_hd`, clock 40 ns / 25 MHz):**
+**Resultados (fluxo completo, 9 corners de processo/temperatura/tensão):**
 
-| Métrica | Valor |
-|---------|-------|
-| DRC (KLayout) | **0 erros** |
-| DRC (Magic) | **0 erros** |
-| LVS | **0 erros/diferenças** (device, net, pin, property) |
-| Timing WNS/TNS (10 corners, setup+hold) | **0 / 0** em todos |
-| Área do core | 653 656 µm² |
-| Área do die | 681 917 µm² (≈0,68 mm², 820,4 × 831,2 µm) |
-| Roteamento | convergiu em 6 iterações (12 220 → 0 erros de DRC de rota) |
-| Antenna | 2 nets/pins com violação residual |
-| Max slew/cap | violações nos corners de processo lento (SS 100C 1.60V) — alvo de otimização F8 |
+| Métrica | Baseline — 40 ns | Otimizada — 30 ns |
+|---------|------------------|-------------------|
+| Frequência | 25,0 MHz | **33,3 MHz** |
+| Folga de setup, pior corner (`max_ss_100C_1v60`) | 11,57 ns | 1,14 ns |
+| WNS / TNS (setup e hold, todos os corners) | 0 / 0 | 0 / 0 |
+| Folga de hold, pior corner | 0,282 ns | 0,283 ns |
+| DRC KLayout / Magic | **0 / 0** | **0 / 0** |
+| LVS | **0** | **0** |
+| Antena | 2 | 2 |
+| Max slew / max cap (corners lentos) | 7.486 / 143 | 7.620 / 140 |
+| Área de standard cells | 259.760 µm² | 259.752 µm² |
+| Área do core · do die | 653.656 µm² · 681.917 µm² (820,4 × 831,2 µm) | idem |
+| Utilização | 39,7 % | 39,7 % |
+| Potência total estimada | 31,9 mW | 42,6 mW |
 
-Artefatos completos em [`docs/evidence/openlane/run_best/`](../evidence/openlane/run_best/):
-`rv32_core.gds` (GDSII final), `rv32_core.nl.v` (netlist gate-level),
-`metrics.json`, `config.json` e uma imagem renderizada do layout
-(`rv32_core_layout.png`).
+**Rodada otimizada (F8).** A folga do baseline indicava um caminho crítico de
+~28,4 ns no pior corner (Fmax estimada ≈ 35 MHz). A segunda rodada
+(`openlane/config/config_opt30.json`) usa 30 ns e ativa o reparo de
+slew/capacitância depois do roteamento global (`RUN_POST_GRT_DESIGN_REPAIR`,
+`RUN_POST_GRT_RESIZER_TIMING`) e mais iterações de reparo de antena. O timing
+fechou em todos os corners com 1,14 ns de folga. A potência cresce de forma
+proporcional à frequência, como esperado para potência dinâmica.
 
-O clock relaxado (40 ns) fechou timing com folga em todos os corners —
-próximo passo natural (F8) é o sweep de `CLOCK_PERIOD`/`FP_CORE_UTIL`
-descrito na seção 10.2 do Plano Mestre, buscando a fronteira de frequência
-sem introduzir congestionamento, e endereçar os slew/cap violations do
-corner mais pessimista.
+**Pendência elétrica.** O reparo pós-roteamento não reduziu as violações de
+max slew / max cap, que aparecem só nos corners lentos (`ss`, 100 °C, 1,60 V)
+e não afetam o fechamento de timing nem DRC/LVS. Próximo passo: reparo com os
+corners `ss` explícitos e buffering de redes de alto fanout
+(`docs/governance/KNOWN_ISSUES.md`, KI-10).
+
+Artefatos em [`docs/evidence/openlane/`](../evidence/openlane/) (`run_best/` =
+baseline, `run_opt30/` = otimizada): `rv32_core.gds` (GDSII), `rv32_core.nl.v`
+(netlist gate-level), `metrics.json`, `config.json` e imagem do layout.
+Tabela consolidada: `reports/physical_sweep.csv`.
 
 ---
 

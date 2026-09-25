@@ -1,27 +1,62 @@
 # =============================================================================
 # Makefile - ChampionCHIP RV32I_Zmmul_Xicrc
-# Todos os alvos rodam a toolchain dentro do container championchip-dev
-# (ver tools/docker/Dockerfile) via scripts/*.sh, por causa da limitacao de
-# bind mount do Docker Desktop na unidade de rede do Google Drive (ver
-# DECISIONS.md ADR-007).
+# Cada alvo chama um script em scripts/, que funciona no Windows (Docker +
+# espelho local), no Linux (Docker) e no CI (CHAMPIONCHIP_NATIVE=1).
 # =============================================================================
+PY ?= python
 
-.PHONY: build-image test lint firmware openlane-baseline clean
+.PHONY: help build-image lint test mutation firmware gls openlane openlane-opt reports dashboard notebooks deck all
+
+help:
+	@echo "build-image   imagem Docker com todas as ferramentas (uma vez)"
+	@echo "lint          lint sintetizavel (Verilator -Wall)"
+	@echo "test          regressao: unit + ISA + firmware + diferencial randomizado"
+	@echo "mutation      teste de mutacao (forca da verificacao)"
+	@echo "firmware      compila e simula o firmware (log + waveform)"
+	@echo "openlane      RTL -> GDSII baseline (40 ns, ~50 min)"
+	@echo "openlane-opt  RTL -> GDSII otimizado (30 ns, ~50 min)"
+	@echo "gls           simulacao gate-level da netlist pos-layout"
+	@echo "reports       agrega evidencias em reports/"
+	@echo "dashboard     gera dashboard/index.html"
+	@echo "notebooks     regenera e executa os notebooks"
+	@echo "deck          gera a apresentacao e o roteiro do video"
+	@echo "all           lint + test + mutation + gls + reports + dashboard"
 
 build-image:
 	docker build -t championchip-dev:latest -f tools/docker/Dockerfile tools/docker
 
-test:
-	bash scripts/run_regression.sh
-
 lint:
 	bash scripts/run_lint.sh
 
+test:
+	bash scripts/run_regression.sh
+
+mutation:
+	bash scripts/run_mutation.sh
+
 firmware:
-	bash scripts/build_firmware.sh
+	bash scripts/run_firmware_sim.sh
 
-openlane-baseline:
-	bash scripts/run_openlane.sh
+openlane:
+	bash scripts/run_openlane.sh openlane/config/config.json baseline
 
-clean:
-	rm -rf /c/tmp/championchip-build
+openlane-opt:
+	bash scripts/run_openlane.sh openlane/config/config_opt30.json opt30
+
+gls:
+	bash scripts/run_gls.sh
+
+reports:
+	$(PY) tools/build_reports.py
+
+dashboard: reports
+	$(PY) tools/build_dashboard.py
+
+notebooks:
+	$(PY) tools/make_notebooks.py
+	$(PY) -m jupyter nbconvert --to notebook --execute --inplace --ExecutePreprocessor.timeout=3600 notebooks/0*.ipynb
+
+deck: reports
+	NODE_PATH=$${NODE_PATH:-C:/tmp/championchip-deck/node_modules} node tools/deck/build_deck.js
+
+all: lint test mutation gls dashboard
