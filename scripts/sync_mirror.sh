@@ -22,8 +22,8 @@ if [ "$DIR" = "to" ]; then
     mkdir -p "$MIRROR/$d"
     cp -r "$PROJDIR/$d/." "$MIRROR/$d/" 2>/dev/null || true
   done
-  # netlists gate-level (entrada da simulacao F9), se ja existirem
-  for nl in "$PROJDIR"/docs/evidence/openlane/*/*.nl.v; do
+  # netlists gate-level e SDFs (entradas da simulacao F9), se ja existirem
+  for nl in "$PROJDIR"/docs/evidence/openlane/*/*.nl.v "$PROJDIR"/docs/evidence/openlane/*/sdf/*.sdf; do
     [ -f "$nl" ] || continue
     rel="${nl#"$PROJDIR"/}"
     mkdir -p "$MIRROR/$(dirname "$rel")"

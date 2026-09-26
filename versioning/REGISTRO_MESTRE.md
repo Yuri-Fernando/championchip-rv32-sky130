@@ -54,7 +54,7 @@ Requisitos R1–R10 conforme extraídos na seção 2 do Plano Mestre.
 | F6 | Firmware | 🟡 | autoral PASS (RTL e gate-level) |
 | F7 | OpenLane baseline | ✅ | `run_best/`: 40 ns, DRC 0, LVS 0, folga 11,57 ns |
 | F8 | Otimização física | ✅ | `run_opt30/`, `run_sem_diodos/`, `run_final/`: 30 ns (33,3 MHz), DRC 0, LVS 0; final com SDC de sign-off completo e nenhum pino acima do limite de slew da biblioteca |
-| F9 | Gate-level regression | ✅ | `gls_baseline.log`, `gls_opt30.log`, `gls_sem_diodos.log`, `gls_final.log`: firmware + 10 programas aleatórios |
+| F9 | Gate-level regression | ✅ | `gls_baseline.log`, `gls_opt30.log`, `gls_sem_diodos.log`, `gls_final.log`: firmware + 10 programas aleatórios; `gls_sdf_final.log`: netlist final com atrasos reais (SDF) em 3 corners + controle negativo |
 | F10 | Relatório, vídeo, submissão | 🟡 | tudo pronto exceto a gravação do vídeo |
 
 ## 4. Definition of Done (seção 14 do Plano Mestre)
@@ -98,6 +98,8 @@ As folgas das três primeiras são otimistas (clock ideal, sem derating); ver AD
 | Diferencial randomizado | 20 programas × 200 instruções, idênticos ao modelo |
 | Teste de mutação | 13/13 bugs detectados |
 | Gate-level | firmware + 10 programas, nas quatro netlists |
+| Gate-level com SDF | firmware + 3 programas PASS em `max_ss`, `min_ff`, `nom_tt`; controle negativo a 10 ns falha |
+| Varredura física | 28 ns e 45 % de utilização violam setup; 30 ns / 35 % é o ponto ótimo |
 | Bugs reais encontrados no RTL | 2 (JAL/JALR, ADR-003) |
 | Lacunas encontradas na própria verificação | 2 (gerador aleatório, ADR-014) |
 
@@ -127,5 +129,6 @@ As folgas das três primeiras são otimistas (clock ideal, sem derating); ver AD
 | v0.8-verificacao-avancada | 25/09/2026 | ISS, randomizado, mutação 13/13, gate-level, 33,3 MHz, dashboard, notebooks, apresentação |
 | v0.9-final-fisico | 25/09/2026 | causa das violações de slew/cap (diodos heurísticos), repositório limpo para publicação |
 | v1.0-signoff | 26/09/2026 | SDC de sign-off completo: nenhum pino acima do limite de slew da biblioteca, timing fechado com restrições realistas |
+| v1.1-final | 26/09/2026 | Etapa final: gate-level com SDF em 3 corners, varredura física, dashboard no GitHub Pages |
 
 Detalhes em [`CHANGELOG.md`](CHANGELOG.md).

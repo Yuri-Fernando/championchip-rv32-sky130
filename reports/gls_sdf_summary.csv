@@ -1,0 +1,8 @@
+corner,teste,status
+max_ss_100C_1v60,firmware,PASS
+max_ss_100C_1v60,random 3 programas,PASS
+min_ff_n40C_1v95,firmware,PASS
+min_ff_n40C_1v95,random 3 programas,PASS
+nom_tt_025C_1v80,firmware,PASS
+nom_tt_025C_1v80,random 3 programas,PASS
+max_ss_100C_1v60,controle negativo 10 ns (deve falhar),FALHOU COMO ESPERADO

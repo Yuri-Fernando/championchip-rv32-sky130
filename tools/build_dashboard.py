@@ -211,6 +211,8 @@ footer { font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--gri
         <figcaption id="layout-cap"></figcaption></figure>
     </div>
     <div class="panel"><h3>Comparação entre rodadas</h3><div class="scroll"><table id="t-phys"></table></div></div>
+    <div class="panel" id="sweep-panel" hidden><h3>Varredura: onde está o limite</h3>
+      <p class="lede" id="sweep-lede"></p><div class="scroll"><table id="t-sweep"></table></div></div>
   </section>
 
   <section id="lacunas">
@@ -244,6 +246,12 @@ const best = runs.filter(r => r.drc_klayout === 0 && r.lvs_errors === 0 && r.set
 const V = D.verification;
 const randomRow = V.regression.find(r => r.suite === "random");
 const glsOk = V.gls.length && V.gls.every(r => r.status === "PASS");
+const sdfRows = (V.gls_sdf || []).filter(r => !r.teste.startsWith("controle"));
+const sdfOk = sdfRows.length && sdfRows.every(r => r.status === "PASS");
+const sdfNeg = (V.gls_sdf || []).find(r => r.teste.startsWith("controle"));
+const sdfPill = r => r.teste.startsWith("controle")
+  ? pill(r.status === "FALHOU COMO ESPERADO" ? "good" : "crit", r.status === "FALHOU COMO ESPERADO" ? "falhou (esperado)" : r.status)
+  : pill(r.status === "PASS" ? "good" : "crit", r.status);
 
 // ---- identidade + KPIs --------------------------------------------------
 const die = best ? Math.sqrt(best.die_area_um2) : null;
@@ -260,7 +268,7 @@ const kpis = [
   [randomRow ? (randomRow.status === "PASS" ? `${randomRow.teste.split(" ")[0]}<small>/${randomRow.teste.split(" ")[0]}</small>` : "FALHA") : "—",
    randomRow ? `programas aleatórios (${randomRow.teste.split(" x ")[1] || ""}) idênticos ao modelo de referência` : "teste diferencial"],
   [`${V.mutation_killed}<small>/${V.mutation.length}</small>`, "bugs injetados detectados (mutation score)"],
-  [glsOk ? "PASS" : (V.gls.length ? "FALHA" : "—"), "simulação gate-level da netlist pós-layout"],
+  [glsOk && (!sdfRows.length || sdfOk) ? "PASS" : (V.gls.length ? "FALHA" : "—"), sdfRows.length ? "gate-level da netlist pós-layout, com atrasos reais (SDF) nos corners extremos" : "simulação gate-level da netlist pós-layout"],
   [best ? `${fmt(best.drc_klayout)}·${fmt(best.lvs_errors)}` : "—", "erros DRC · LVS no GDSII final"],
   [best ? `${fmt(best.clock_mhz, 1)}<small> MHz</small>` : "—", `timing fechado em todos os corners (folga ${best ? fmt(best.setup_worst_slack_ns, 2) : "—"} ns)`],
 ];
@@ -273,7 +281,8 @@ $("#phases").innerHTML = D.phases.map(p => `<div class="phase"><div class="pid">
 // ---- regressao ------------------------------------------------------------
 $("#t-reg").innerHTML = `<thead><tr><th>Suíte</th><th>Teste</th><th>Resultado</th></tr></thead><tbody>` +
   V.regression.map(r => `<tr><td>${esc(r.suite)}</td><td class="mono">${esc(r.teste)}</td><td>${pill(r.status === "PASS" ? "good" : "crit", r.status)}</td></tr>`).join("") +
-  V.gls.map(r => `<tr><td>gate-level</td><td class="mono">${esc(r.teste)}</td><td>${pill(r.status === "PASS" ? "good" : "crit", r.status)}</td></tr>`).join("") + `</tbody>`;
+  V.gls.map(r => `<tr><td>gate-level</td><td class="mono">${esc(r.teste)}</td><td>${pill(r.status === "PASS" ? "good" : "crit", r.status)}</td></tr>`).join("") +
+  (V.gls_sdf || []).map(r => `<tr><td>gate-level SDF</td><td class="mono">${esc(r.corner.replace("_100C_1v60", "").replace("_n40C_1v95", "").replace("_025C_1v80", ""))} · ${esc(r.teste)}</td><td>${sdfPill(r)}</td></tr>`).join("") + `</tbody>`;
 
 // ---- barras horizontais (serie unica) -------------------------------------
 function hbars(svgSel, rows, max, fmtVal, tipText) {
@@ -379,6 +388,18 @@ const rowsP = [
 ];
 $("#t-phys").innerHTML = `<thead><tr><th>Métrica</th>${runs.map(r => `<th class="r">${esc(r.label)}</th>`).join("")}</tr></thead><tbody>` +
   rowsP.map(([n, f]) => `<tr><td>${esc(n)}</td>${runs.map(r => `<td class="r mono">${f(r)}</td>`).join("")}</tr>`).join("") + `</tbody>`;
+// ---- varredura ------------------------------------------------------------
+const SW = D.sweep || [];
+if (SW.length) {
+  const ref = runs.find(r => r.label === "final");
+  const rowsS = (ref ? [ref] : []).concat(SW);
+  const ok = r => r.setup_worst_slack_ns >= 0 && r.drc_klayout === 0 && r.lvs_errors === 0;
+  $("#sweep-panel").hidden = false;
+  $("#sweep-lede").textContent = "Mesma configuração da rodada final, mudando só o período de clock ou a utilização do núcleo. Uma rodada só conta se fecha setup no pior corner com o SDC de sign-off.";
+  $("#t-sweep").innerHTML = `<thead><tr><th>Rodada</th><th class="r">Clock</th><th class="r">Utilização</th><th class="r">Folga de setup</th><th class="r">Caminhos violando</th><th class="r">DRC · LVS</th><th class="r">Antena</th><th class="r">Área do die</th><th>Timing</th></tr></thead><tbody>` +
+    rowsS.map(r => `<tr><td>${esc(r.label)}</td><td class="r mono">${fmt(r.clock_period_ns)} ns (${fmt(r.clock_mhz, 1)} MHz)</td><td class="r mono">${fmt(r.core_util_pct)} %</td><td class="r mono">${fmt(r.setup_worst_slack_ns, 2)} ns</td><td class="r mono">${fmt(r.setup_violations)}</td><td class="r mono">${fmt(r.drc_klayout)} · ${fmt(r.lvs_errors)}</td><td class="r mono">${fmt(r.antenna_violations)}</td><td class="r mono">${fmt(r.die_area_um2 / 1e6, 3)} mm²</td><td>${ok(r) ? pill("good", "fechado") : pill("crit", "viola setup")}</td></tr>`).join("") + `</tbody>`;
+}
+
 if (best) $("#layout-cap").textContent = `GDSII do rv32_core (rodada ${best.label}, ${fmt(best.clock_period_ns)} ns): die de ${fmt(best.die_w_um, 1)} × ${fmt(best.die_h_um, 1)} µm, ${fmt(best.instances)} instâncias de células, renderizado com o KLayout.`;
 
 // ---- lacunas -------------------------------------------------------------

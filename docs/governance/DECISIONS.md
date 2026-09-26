@@ -288,3 +288,84 @@ nos logs vinham de barras de progresso truncadas com "…" (corrigido em
 `tools/clean_log.py`).
 **Registro:** A, B, C e D arquivadas em `desconsiderar/openlane_runs/`
 (`signoff_*.tar.gz` e as configs); D é `docs/evidence/openlane/run_final`.
+
+## ADR-018 — Simulação gate-level com atrasos reais (SDF) nos corners extremos
+
+**Contexto:** o GLS da F9 usa modelos funcionais (`-DFUNCTIONAL`, atraso
+unitário): prova que a netlist faz a mesma coisa que o RTL, mas não que ela
+funciona no tempo. O timing é coberto pela STA do OpenLane; faltava uma
+simulação que exercitasse a netlist final com os atrasos extraídos do layout.
+
+**Decisão:** `scripts/core/gls_sdf.sh` (`make gls-sdf`) roda o firmware e
+programas aleatórios sobre a netlist final com os modelos **temporais** da
+`sky130_fd_sc_hd` e o SDF de cada corner anotado no núcleo
+(`$sdf_annotate`), com o clock do projeto (30 ns):
+- `max_ss_100C_1v60` (o mais lento — setup), `min_ff_n40C_1v95` (o mais rápido
+  — hold) e `nom_tt_025C_1v80` (típico), em paralelo;
+- **controle negativo**: o mesmo firmware no corner lento com clock de 10 ns
+  tem de falhar. Um PASS ali provaria que o SDF não entrou.
+
+**Ajustes necessários (todos documentados no código):**
+1. Icarus 12 não implementa timing checks; os sinais `X_delayed` que o
+   `$setuphold` geraria ficam sem driver. `tools/sky130_timing_models.awk` gera
+   uma cópia dos modelos com `assign X_delayed = X` para cada entrada `X` (o PDK
+   não é alterado). Setup/hold continuam verificados na STA.
+2. A célula `lpflow_bleeder` (não usada) declara um caminho para `VPWR`, que não
+   existe na versão sem pinos de alimentação — linha removida na cópia.
+3. A DMEM comportamental mudava a saída no instante da borda; com o atraso real
+   da árvore de clock no núcleo, isso criaria uma corrida que não existe com
+   uma SRAM real. No modo `GLS_SDF` ela ganha tempo de acesso de 3 ns (cabe no
+   orçamento de entrada do SDC, 6 ns).
+4. **Erro encontrado e corrigido no próprio método:** a primeira execução
+   passou, mas terminou em 10.530 s de tempo simulado. O `timescale` de 1 ns
+   entrava depois do testbench, que ficava na escala padrão (1 s): o clock de
+   "30" virava 30 s e os atrasos do SDF sumiam. Corrigida a ordem, o mesmo
+   firmware termina em 10,53 µs (351 ciclos de 30 ns) — e o controle negativo
+   foi acrescentado para que esse tipo de erro não passe despercebido.
+
+**Validação do método (corner lento):** firmware e programa aleatório PASS a
+30 ns; controle negativo a 10 ns FALHOU como esperado (o firmware não chega ao
+EBREAK).
+
+**Resultado (netlist final, clock de 30 ns):**
+
+| Corner | Firmware | 3 programas aleatórios |
+|---|---|---|
+| `max_ss_100C_1v60` (lento) | PASS | 3/3 idênticos ao modelo |
+| `min_ff_n40C_1v95` (rápido) | PASS | 3/3 idênticos ao modelo |
+| `nom_tt_025C_1v80` (típico) | PASS | 3/3 idênticos ao modelo |
+| controle negativo: `max_ss` a 10 ns | **falhou, como esperado** | — |
+
+Cada simulação com SDF leva de 10 a 15 minutos (contra segundos no modelo
+funcional), por isso são 3 programas por corner; os 10 programas completos
+continuam rodando no GLS funcional (`make gls`). Evidência:
+`docs/evidence/logs/gls_sdf_final.log`, `reports/gls_sdf_summary.csv`.
+
+## ADR-019 — Varredura de frequência e densidade: 30 ns / 35 % é o ponto ótimo
+
+**Contexto:** o Plano Mestre previa baseline → sweep → melhor rodada. Com o SDC
+de sign-off (ADR-017), a rodada final fecha a 30 ns com folga de 0,09 ns no
+pior corner. Faltava saber se dava para ir além em frequência ou em área.
+
+**Experimento:** a configuração da rodada final (`config_final.json`) mudando
+um parâmetro por vez (`config_sweep_28ns.json`, `config_sweep_u45.json`):
+
+| Rodada | Clock | Utilização | Folga de setup | Caminhos violando | Antena | Área do die | DRC · LVS |
+|---|---|---|---|---|---|---|---|
+| **final** | 30 ns (33,3 MHz) | 35 % | **+0,09 ns** | 0 | 24 | 0,682 mm² | 0 · 0 |
+| sweep_28ns | 28 ns (35,7 MHz) | 35 % | −1,35 ns | 13 | 22 | 0,682 mm² | 0 · 0 |
+| sweep_u45 | 30 ns (33,3 MHz) | 45 % | −0,82 ns | 3 | 38 | 0,533 mm² | 0 · 0 |
+
+**Conclusão:** as duas direções violam setup no corner lento (`max_ss`); os
+demais corners sobram folga (a 28 ns o típico ainda tem 13 ns). Mais
+frequência não fecha, e compactar o núcleo encurta a área em 22 %, mas o
+congestionamento piora o timing e a antena. A rodada final continua sendo o
+melhor ponto desta microarquitetura com restrições de sign-off. Subir a
+frequência exigiria mudar o RTL, não o fluxo físico: o caminho crítico (128
+células no corner lento) sai de um flip-flop que comanda os multiplexadores de
+leitura do banco de registradores e termina em `mult_out_reg` — leitura de
+operando mais multiplicação 32×32 combinacional no mesmo ciclo. Dividir o
+multiplicador em dois ciclos (ou registrar os operandos antes dele) é a
+alavanca para passar de 33,3 MHz.
+**Registro:** runs completas em `desconsiderar/openlane_runs/sweep_*.tar.gz`;
+métricas em `docs/evidence/openlane/run_sweep_*/`.

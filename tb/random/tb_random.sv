@@ -26,7 +26,19 @@ module tb_random;
         .clk_i(clk), .rst_i(rst)
     );
 
-    always #5 clk = ~clk;
+`ifndef CLK_HALF
+    `define CLK_HALF 5
+`endif
+    always #(`CLK_HALF) clk = ~clk;
+
+`ifdef SDF_ANNOTATE
+    // Atrasos reais pos-layout no core (SDF do OpenLane, por corner); ver
+    // scripts/core/gls_sdf.sh. Sem SDF_ANNOTATE o testbench e identico ao de sempre.
+    initial begin : sdf_annotate_core
+        string sdf_file;
+        if ($value$plusargs("SDF=%s", sdf_file)) $sdf_annotate(sdf_file, dut.u_core);
+    end
+`endif
 
     initial begin
         if (!$value$plusargs("PROG=%s", prog_file) || !$value$plusargs("EXP=%s", exp_file)) begin

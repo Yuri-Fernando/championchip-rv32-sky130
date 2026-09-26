@@ -7,14 +7,20 @@
 ![mutation score](https://img.shields.io/badge/mutation%20score-13%2F13-0a8a0a)
 ![DRC LVS](https://img.shields.io/badge/DRC%20%C2%B7%20LVS-0%20%C2%B7%200-0a8a0a)
 ![clock](https://img.shields.io/badge/clock-33,3%20MHz-c8742a)
+![gate-level SDF](https://img.shields.io/badge/gate--level%20SDF-3%20corners%20PASS-0a8a0a)
+![versão](https://img.shields.io/badge/vers%C3%A3o-v1.1-4a5563)
 ![PDK](https://img.shields.io/badge/PDK-SKY130%20130nm-4a5563)
 ![license](https://img.shields.io/badge/license-MIT-4a5563)
 
 ## Status
 
-🟢 **Concluído no escopo da Fase 2** — núcleo verificado, fechado fisicamente
-(GDSII com DRC 0 e LVS 0) e validado em simulação gate-level. Três instruções
-(extensão Xicrc) aguardam parâmetros que o guia oficial não publicou.
+🟢 **Concluído no escopo da Fase 2 — v1.1 (etapa final)** — núcleo verificado,
+fechado fisicamente (GDSII com DRC 0 e LVS 0, timing fechado com restrições de
+sign-off) e validado em simulação gate-level, inclusive com os **atrasos reais
+do layout (SDF)** nos corners extremos. Três instruções (extensão Xicrc)
+aguardam parâmetros que o guia oficial não publicou.
+
+📊 **[Dashboard interativo com todos os resultados](https://yuri-fernando.github.io/championchip-rv32-sky130/)**
 
 ## Descrição / Contexto
 
@@ -33,12 +39,42 @@ firmware oficial). A regra do projeto foi nunca preencher uma lacuna por
 suposição: cada uma está isolada no código, marcada e documentada em
 [`SPEC_GAPS.md`](docs/governance/SPEC_GAPS.md).
 
-O projeto seguiu um **Plano Mestre de Engenharia** com 11 fases (F0–F10), cada
-uma encerrada por um gate de evidência (teste verde, log ou métrica).
-
 > **Sobre o nome:** `championchip-rv32-sky130` junta a competição, o núcleo
 > (RISC-V de 32 bits) e o processo de fabricação (SkyWater 130 nm) — os três
 > fatos que definem o projeto.
+
+---
+
+## 🧭 Origem do Projeto
+
+O projeto nasceu do **guia oficial da Fase 2 da ChampionCHIP eXperience**. Antes
+de escrever qualquer linha de RTL, o guia foi lido por inteiro e cruzado com a
+especificação RISC-V, a documentação do OpenLane e o PDK SKY130. Dessa leitura
+saíram quatro conclusões que definiram o projeto:
+
+1. **O alvo são 47 instruções**: 40 do RV32I, 4 de multiplicação (Zmmul, com os
+   mesmos encodings da extensão M) e 3 de CRC customizado (Xicrc);
+2. **Multicycle, não pipeline**: o próprio guia propõe um núcleo que reaproveita
+   hardware entre ciclos para economizar área. Pipeline, cache e forwarding
+   ficaram de fora de propósito;
+3. **A DMEM é síncrona**: o dado de um load só chega um clock depois. O ciclo
+   clássico FETCH → DECODE → EXECUTE → WRITE-BACK não comporta isso, então a FSM
+   ganhou o caminho `MEM_READ → MEM_WAIT → WB_MEM` desde o desenho, em vez de ser
+   remendada depois na depuração;
+4. **O guia tem lacunas perigosas**: define os encodings do CRC, mas não o
+   polinômio, o valor inicial, a reflexão nem o XOR final; e fala em IMEM de até
+   4 MB, que não pode ser sintetizada em flip-flops. A regra foi **não inventar**:
+   o CRC ficou estrutural e parametrizado, e o top de simulação foi separado do
+   top físico.
+
+Essas conclusões viraram um **Plano Mestre de Engenharia** de 19 páginas:
+arquitetura, datapath, FSM, divisão dos módulos, matriz das 47 instruções,
+estratégia de verificação, fluxo físico (baseline → sweep → melhor rodada),
+riscos e *Definition of Done*. A execução seguiu 11 fases (F0–F10), cada uma
+fechada por um **gate de evidência** (teste verde, log ou métrica) antes de a
+próxima começar. O desenvolvimento foi conduzido com agentes de IA (Claude
+Code) sob essas regras: nenhuma fase avança sem prova, e nenhuma lacuna é
+preenchida por suposição.
 
 ---
 
@@ -143,7 +179,7 @@ Roteamento global e detalhado  →  Reparo de slew/cap/antena
    ↓
 STA em 9 corners · DRC (KLayout + Magic) · LVS (Netgen)
    ↓
-GDSII + netlist gate-level  →  simulação gate-level (firmware + aleatórios)
+GDSII + netlist gate-level  →  simulação gate-level (funcional e com SDF por corner)
 ```
 
 ---
@@ -160,6 +196,7 @@ A verificação foi construída em camadas, cada uma cobrindo um tipo diferente 
 | **Diferencial randomizado** | programas aleatórios no RTL e num **modelo de referência** em Python | 20 × 200 instruções idênticos |
 | **Teste de mutação** | 13 bugs realistas injetados no RTL, um por vez | **13/13 detectados** |
 | **Gate-level** | a netlist pós-layout roda firmware + 10 programas aleatórios | equivalente ao modelo |
+| **Gate-level com SDF** | a netlist final com os atrasos reais do layout, nos corners lento, rápido e típico, a 30 ns | 3/3 corners PASS · controle negativo falha como esperado |
 
 - **Modelo de referência independente** ([`tools/iss/rv32_iss.py`](tools/iss/rv32_iss.py)):
   simulador de instruções RV32I + Zmmul escrito **a partir da especificação RISC-V,
@@ -225,7 +262,19 @@ Otimização física (30 ns) · correção de slew/cap · SDC de sign-off comple
    ([ADR-017](docs/governance/DECISIONS.md)). O que sobrou (cap, fanout e 24
    violações de antena) vem da ordem do fluxo e está em
    [KNOWN_ISSUES](docs/governance/KNOWN_ISSUES.md).
-6. **Ambiente** — o Docker não monta pastas sincronizadas (Google Drive), o OpenLane
+6. **A simulação com SDF enganou na primeira vez** — o primeiro resultado com
+   atrasos reais passou, mas terminou em 10.530 *segundos* de tempo simulado: o
+   `timescale` de 1 ns entrava depois do testbench, e o clock de "30" virou
+   30 s — os atrasos do SDF sumiam na escala. Corrigida a ordem, o firmware
+   termina em 10,53 µs (351 ciclos). Desde então o teste tem um **controle
+   negativo**: o mesmo firmware com clock de 10 ns tem de falhar, e falha
+   ([ADR-018](docs/governance/DECISIONS.md)).
+7. **O limite é da microarquitetura, não do fluxo** — a varredura mostrou que
+   28 ns (35,7 MHz) viola setup em 13 caminhos e que compactar o núcleo (45 %
+   de utilização) também viola. O caminho crítico termina no registrador do
+   multiplicador: leitura de operando + multiplicação 32×32 no mesmo ciclo.
+   Passar de 33,3 MHz exige mudar o RTL ([ADR-019](docs/governance/DECISIONS.md)).
+8. **Ambiente** — o Docker não monta pastas sincronizadas (Google Drive), o OpenLane
    não roda no Python do Windows (`signal.SIGKILL`) e o modo `--dockerized`
    exige que os caminhos valham para o daemon em containers aninhados. Cada
    solução está registrada como ADR (007, 009–012).
@@ -259,6 +308,7 @@ Otimização física (30 ns) · correção de slew/cap · SDC de sign-off comple
 - **20 programas aleatórios × 200 instruções** idênticos ao modelo de referência, cobrindo 40 instruções distintas;
 - **Mutation score 13/13** — todos os bugs injetados foram detectados;
 - **Gate-level**: firmware + 10 programas aleatórios equivalentes ao modelo nas netlists de todas as rodadas;
+- **Gate-level com atrasos reais (SDF)**: firmware + 3 programas aleatórios PASS nos corners `max_ss` (lento), `min_ff` (rápido) e `nom_tt`, a 30 ns; o controle negativo a 10 ns falha, provando que os atrasos estão aplicados;
 - **2 bugs reais** encontrados e corrigidos no RTL; **2 lacunas** encontradas e corrigidas na própria verificação.
 
 **Implementação física (OpenLane 2 · sky130_fd_sc_hd · 9 corners)**
@@ -275,27 +325,57 @@ Otimização física (30 ns) · correção de slew/cap · SDC de sign-off comple
 - **Fmax estimada** = 1000 / (período − folga no pior corner); é uma estimativa, não uma rodada fechada nessa frequência;
 - O que resta na final fica nos corners lentos (`ss`, 100 °C, 1,60 V): 263 pinos acima da meta de 0,75 ns (pior 1,42 ns), 74 de capacitância (excesso máximo 0,084 pF) e 24 de antena (pior razão 4,34 em met3). Ver KI-10 e KI-11.
 
+**Varredura — onde está o limite** (mesma configuração da final, um parâmetro por vez)
+
+| Rodada | Clock | Utilização | Folga de setup | Caminhos violando | Área do die | Timing |
+|---|---|---|---|---|---|---|
+| **final** | 30 ns · 33,3 MHz | 35 % | **+0,09 ns** | 0 | 0,682 mm² | ✅ fechado |
+| sweep_28ns | 28 ns · 35,7 MHz | 35 % | −1,35 ns | 13 | 0,682 mm² | ❌ viola setup |
+| sweep_u45 | 30 ns · 33,3 MHz | 45 % | −0,82 ns | 3 | 0,533 mm² | ❌ viola setup |
+
+As duas direções falham só no corner lento: **30 ns com 35 % de utilização é o
+ponto ótimo** desta microarquitetura ([ADR-019](docs/governance/DECISIONS.md)).
+
 ---
 
 ## 🖼️ Evidências
 
+> Todas as imagens são clicáveis e abrem em tamanho real.
+
+### 📊 Dashboard — todos os resultados em uma página
+
 <p align="center">
-  <img src="docs/evidence/openlane/run_final/rv32_core_layout.png" width="440" alt="Layout GDSII do rv32_core">
-  <br><sub>GDSII final do <code>rv32_core</code> renderizado com o KLayout (820 × 831 µm).</sub>
+  <a href="https://yuri-fernando.github.io/championchip-rv32-sky130/">
+    <img src="docs/img/dashboard.png" width="760" alt="Dashboard do projeto: fases, verificação, ISA, firmware e implementação física">
+  </a>
+  <br>
+  <sub><b><a href="https://yuri-fernando.github.io/championchip-rv32-sky130/">▶ Abrir o dashboard interativo</a></b> (GitHub Pages, gerado a cada push)
+  · <a href="docs/img/dashboard_completo.png">captura da página inteira</a></sub>
 </p>
 
-**Firmware executando** — cada instrução passa por FETCH → DECODE → EXECUTE → WRITE-BACK:
+Fases F0–F10, suítes de regressão, teste de mutação, cobertura do teste
+aleatório, matriz das 47 instruções, waveforms do firmware, folga de setup por
+corner, layout e a comparação completa entre as rodadas físicas. Gerado por
+`make dashboard` a partir de [`reports/summary.json`](reports/summary.json).
 
-![Waveform: início do firmware](docs/evidence/waveforms/firmware_inicio.svg)
+### 🔲 Layout final (GDSII)
 
-**Fim do firmware** — a assinatura `0x600DC0DE` é gravada na DMEM e o EBREAK levanta `halt_o`:
+<p align="center">
+  <a href="docs/evidence/openlane/run_final/rv32_core_layout.png">
+    <img src="docs/evidence/openlane/run_final/rv32_core_layout.png" width="440" alt="Layout GDSII do rv32_core">
+  </a>
+  <br><sub>GDSII final do <code>rv32_core</code> renderizado com o KLayout (820 × 831 µm, ~37 mil células sky130).</sub>
+</p>
 
-![Waveform: fim do firmware](docs/evidence/waveforms/firmware_fim.svg)
+### 〰️ Firmware executando
 
-**Dashboard** (`make dashboard`) — painel autocontido com fases, regressão, mutação,
-cobertura, matriz da ISA, waveforms e métricas físicas:
+Cada instrução passa por FETCH → DECODE → EXECUTE → WRITE-BACK:
 
-<p align="center"><img src="docs/img/dashboard.png" width="720" alt="Dashboard do projeto"></p>
+<a href="docs/evidence/waveforms/firmware_inicio.svg"><img src="docs/evidence/waveforms/firmware_inicio.svg" alt="Waveform: início do firmware"></a>
+
+No fim, a assinatura `0x600DC0DE` é gravada na DMEM e o EBREAK levanta `halt_o`:
+
+<a href="docs/evidence/waveforms/firmware_fim.svg"><img src="docs/evidence/waveforms/firmware_fim.svg" alt="Waveform: fim do firmware"></a>
 
 ---
 
@@ -352,23 +432,53 @@ Firmware autoral executando no RTL e na netlist gate-level; firmware oficial ain
 40 ns (25 MHz), DRC 0, LVS 0, timing fechado em todos os corners.
 
 **F8 — Otimização física** ✅ Concluída
-30 ns (33,3 MHz) com timing fechado sob SDC de sign-off completo; duas causas das violações de slew encontradas (diodos em massa e SDC incompleto): nenhum pino acima do limite da biblioteca.
+30 ns (33,3 MHz) com timing fechado sob SDC de sign-off completo; duas causas das violações de slew encontradas (diodos em massa e SDC incompleto): nenhum pino acima do limite da biblioteca. A varredura de frequência e densidade confirma 30 ns / 35 % como ponto ótimo.
 
 **F9 — Gate-level regression** ✅ Concluída
-Netlists pós-layout equivalentes ao modelo de referência.
+Netlists pós-layout equivalentes ao modelo de referência; a final também com atrasos reais (SDF) nos corners lento, rápido e típico.
 
 **F10 — Relatório, vídeo e submissão** 🟡 Em andamento
-Relatório técnico, notebooks, dashboard e pacote de entrega prontos; vídeo em gravação.
+Relatório técnico, notebooks, dashboard (GitHub Pages), apresentação, roteiro e pacote de entrega prontos; vídeo em gravação.
+
+---
+
+## 🕓 Histórico e Mudanças
+
+| Versão | Data | O que mudou |
+|---|---|---|
+| **v0.4** · `isa47` | 14/09/2026 | RTL completo (14 módulos), 44/47 instruções com teste dirigido; os dois bugs de PC em JAL/JALR encontrados e corrigidos |
+| **v0.5** · `firmware-smoke` | 14/09/2026 | Firmware autoral compilado com GCC RISC-V executa no processador (9/9 blocos) |
+| **v0.7** · `openlane-baseline` | 16/09/2026 | Primeiro GDSII: 40 ns (25 MHz), DRC 0, LVS 0, timing fechado |
+| **v0.8** · `verificacao-avancada` | 25/09/2026 | Modelo de referência independente, teste diferencial randomizado, mutação 13/13, gate-level; rodada a 30 ns (33,3 MHz); dashboard e notebooks |
+| **v0.9** · `final-fisico` | 25/09/2026 | Primeira causa do slew encontrada: 16.570 diodos inseridos depois do reparo; repositório limpo para publicação |
+| **v1.0** · `signoff` | 26/09/2026 | Segunda causa: SDC incompleto. Com o SDC de sign-off, nenhum pino acima do limite de slew da biblioteca e timing fechado com derating |
+| **v1.1** · `final` | 26/09/2026 | **Etapa final.** Gate-level com atrasos reais (SDF) em 3 corners + controle negativo; varredura de frequência e densidade (30 ns / 35 % é o ótimo); dashboard no GitHub Pages; origem e histórico no README |
+
+Detalhe completo por versão em [`CHANGELOG.md`](versioning/CHANGELOG.md) e, por
+sessão de trabalho (o que foi tentado, o que falhou e por quê), em
+[`HISTORICO.md`](versioning/HISTORICO.md).
 
 ---
 
 ## 🔮 Próximos Passos
 
-- Receber os parâmetros oficiais do CRC (polinômio, init, reflexão, xorout) e fechar **47/47**;
-- Integrar a macro física de memória (SG-02) e a pinagem (SG-03) no `chip_top`;
-- Executar o firmware oficial no RTL e na netlist (SG-05);
-- Adicionar simulação gate-level com atrasos reais (SDF) nos corners extremos;
-- Explorar o limite de frequência com um sweep mais fino de `CLOCK_PERIOD` e `FP_CORE_UTIL`.
+**Concluídos na etapa final (v1.1)**
+
+- ✅ Simulação gate-level com atrasos reais (SDF) nos corners extremos — PASS em `max_ss`, `min_ff` e `nom_tt`, com controle negativo ([ADR-018](docs/governance/DECISIONS.md));
+- ✅ Varredura de `CLOCK_PERIOD` e `FP_CORE_UTIL` — 30 ns / 35 % é o ponto ótimo; 28 ns e 45 % violam setup ([ADR-019](docs/governance/DECISIONS.md)).
+
+**Dependem de material da organização** (não podem ser feitos sem inventar especificação)
+
+- Parâmetros oficiais do CRC (polinômio, valor inicial, reflexão, XOR final) → fechar **47/47** ([SG-01](docs/governance/SPEC_GAPS.md));
+- Macro física de memória e pinagem → integrar no `chip_top` e fechar o SoC completo (SG-02, SG-03);
+- Firmware oficial → executar no RTL e na netlist (SG-05).
+
+**Próximos passos técnicos depois desta versão** (o que eu faria em uma v2)
+
+- **Multiplicador em dois ciclos** (ou operandos registrados antes dele): é o caminho crítico e a alavanca para passar de 33,3 MHz;
+- **Reparo de projeto depois do reparo de antena** (fluxo customizado do OpenLane): resolveria o conflito entre antena e capacitância que sobra nos corners lentos ([KI-10, KI-11](docs/governance/KNOWN_ISSUES.md));
+- **Timing checks na simulação** (setup/hold dinâmicos) com um simulador que os implemente — o Icarus 12 anota os atrasos, mas não verifica setup/hold; hoje isso fica com a STA;
+- **Tapeout** do SoC completo por um programa de shuttle (ChipInventor, Tiny Tapeout, chipIgnite).
 
 ---
 
@@ -387,7 +497,8 @@ make test             # unit + ISA + firmware + 20 programas aleatórios vs mode
 make mutation         # injeta 13 bugs e mede se a verificação detecta cada um
 make firmware         # compila e simula o firmware (log + waveform)
 make openlane-final   # RTL -> GDSII final (~50 min; baixa o PDK SKY130 na 1a vez)
-make gls              # simulação gate-level da netlist pós-layout
+make gls              # simulação gate-level da netlist pós-layout (modelo funcional)
+make gls-sdf          # gate-level com atrasos reais (SDF) em 3 corners + controle negativo
 make dashboard        # gera dashboard/index.html a partir dos resultados
 ```
 
@@ -426,26 +537,28 @@ firmware/
   official/      ponto de entrada do firmware oficial (SG-05)
 openlane/
   config/        config.json (40 ns) · config_opt30.json (30 ns) · config_sem_diodos.json · config_final.json (30 ns · SDC de sign-off)
+                 config_sweep_28ns.json · config_sweep_u45.json (varredura)
   constraints/   base.sdc (clock e I/O) · signoff.sdc (restrições completas de sign-off)
 tools/
   iss/           modelo de referência (rv32_iss.py) e gerador de programas aleatórios
   mutation/      teste de mutação
   docker/        Dockerfile da imagem de desenvolvimento
   build_reports.py · build_dashboard.py · make_notebooks.py · vcd2svg.py · clean_log.py
+  sky130_timing_models.awk   ajuste dos modelos temporais da SKY130 para o Icarus (GLS com SDF)
 scripts/
   _env.sh        detecção de ambiente (Windows / Linux / nativo)
-  core/          etapas que rodam dentro do ambiente (regression, firmware, gls, lint, mutation)
+  core/          etapas que rodam dentro do ambiente (regression, firmware, gls, gls_sdf, lint, mutation)
   run_*.sh       um script por etapa
 notebooks/       00–03 + _common.py
 reports/         summary.json · RESUMO.md · regressão · mutação · gate-level · sweep físico
 docs/
   architecture/  visão da arquitetura (diagramas Mermaid)
-  governance/    DECISIONS (ADR-001–017) · SPEC_GAPS · KNOWN_ISSUES · STATUS · TEST_MATRIX
+  governance/    DECISIONS (ADR-001–019) · SPEC_GAPS · KNOWN_ISSUES · STATUS · TEST_MATRIX
   submission/    RELATORIO.md (relatório técnico, tópicos 1–6 do guia)
   evidence/      logs · waveforms · cobertura da ISA · métricas e layouts do OpenLane
   img/           imagens do README
 versioning/      CHANGELOG · HISTORICO · REGISTRO_MESTRE
-.github/workflows/ci.yml
+.github/workflows/  ci.yml (verificação a cada push) · pages.yml (dashboard no GitHub Pages)
 ```
 
 Arquivos pesados do layout (GDSII e netlists, dezenas de MB) não são
@@ -460,11 +573,12 @@ pacote de entrega da competição.
 |---|---|
 | [Relatório técnico](docs/submission/RELATORIO.md) | visão geral, instruções, datapath, módulos, firmware, OpenLane |
 | [Registro mestre](versioning/REGISTRO_MESTRE.md) | cada requisito do guia ligado à evidência que o comprova |
-| [Decisões (ADRs)](docs/governance/DECISIONS.md) | 17 decisões de arquitetura e engenharia, incluindo os bugs corrigidos |
+| [Decisões (ADRs)](docs/governance/DECISIONS.md) | 19 decisões de arquitetura e engenharia, incluindo os bugs corrigidos |
 | [Lacunas do guia](docs/governance/SPEC_GAPS.md) | o que o guia não especifica e como cada ponto foi tratado |
 | [Problemas conhecidos](docs/governance/KNOWN_ISSUES.md) | limitações registradas, abertas e resolvidas |
 | [Matriz de testes](docs/governance/TEST_MATRIX.csv) | 47 instruções × testbench × status |
 | [Changelog](versioning/CHANGELOG.md) · [Histórico](versioning/HISTORICO.md) | evolução por versão e por sessão |
+| [Dashboard](https://yuri-fernando.github.io/championchip-rv32-sky130/) | todos os resultados em uma página interativa |
 | [Arquitetura](docs/architecture/overview.md) | sistema e FSM em diagramas |
 
 ---
@@ -483,8 +597,8 @@ pacote de entrega da competição.
 
 ## Status
 
-🟢 **Concluído no escopo da Fase 2** — tudo que depende apenas do projeto está
-implementado, verificado e fechado fisicamente. O que resta (3 instruções de
+🟢 **Concluído no escopo da Fase 2 (v1.1)** — tudo que depende apenas do projeto está
+implementado, verificado (inclusive com os atrasos reais do layout) e fechado fisicamente. O que resta (3 instruções de
 CRC, memória física, pinagem e firmware oficial) depende de material que a
 organização ainda não publicou.
 

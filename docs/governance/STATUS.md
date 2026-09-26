@@ -13,7 +13,9 @@ Plano Mestre). Visão completa: [`versioning/REGISTRO_MESTRE.md`](../../versioni
 - F8: 30 ns (33,3 MHz) — DRC 0, LVS 0, timing fechado nos 9 corners com SDC de
   sign-off completo; nenhum pino acima do limite de slew da biblioteca
   (diodos em massa removidos, ADR-016; SDC completo, ADR-017).
-- F9: gate-level — firmware + 10 programas aleatórios nas quatro netlists.
+- F9: gate-level — firmware + 10 programas aleatórios nas quatro netlists; a final
+  também com atrasos reais (SDF) em `max_ss`, `min_ff` e `nom_tt`, com controle negativo.
+- Varredura: 28 ns e 45 % de utilização violam setup; 30 ns / 35 % é o ponto ótimo (ADR-019).
 - Verificação avançada: modelo de referência independente, 20 programas
   aleatórios idênticos, mutation score 13/13.
 - Infraestrutura: scripts portáveis, CI, relatórios, dashboard, notebooks,
@@ -21,7 +23,7 @@ Plano Mestre). Visão completa: [`versioning/REGISTRO_MESTRE.md`](../../versioni
 
 ## Testes (evidência real)
 
-14/14 suítes de regressão · 13/13 mutantes · gate-level PASS (baseline, opt30, sem_diodos e final).
+14/14 suítes de regressão · 13/13 mutantes · gate-level PASS (baseline, opt30, sem_diodos e final) · gate-level com SDF PASS em 3 corners.
 Logs em `docs/evidence/logs/`, resumos em `reports/`.
 
 ## Pendências / blockers

@@ -24,7 +24,18 @@ module dmem #(
     logic [31:0] rdata_reg;
 
     assign word_idx = (addr_i - BASE_ADDR) >> 2;
+`ifdef GLS_SDF
+    // Simulacao com atrasos reais (SDF): uma SRAM fisica tem tempo de acesso;
+    // sem ele, a saida mudaria no mesmo instante da borda e o core (com o
+    // atraso real da arvore de clock) veria uma corrida que nao existe no
+    // silicio. 3 ns cabe no orcamento de entrada do SDC (20 % de 30 ns = 6 ns).
+`ifndef MEM_TCO
+    `define MEM_TCO 3
+`endif
+    assign #(`MEM_TCO) rdata_o = rdata_reg;
+`else
     assign rdata_o  = rdata_reg;
+`endif
 
     initial begin
         for (int i = 0; i < DEPTH_WORDS; i++) mem[i] = 32'd0;

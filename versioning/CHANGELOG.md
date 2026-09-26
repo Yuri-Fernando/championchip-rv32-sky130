@@ -182,3 +182,35 @@ BLOCKED-XICRC — ver SPEC_GAPS.md SG-01.
 - Cap (74), fanout (408), 263 pinos acima da meta de 0,75 ns e 24 violações de
   antena na rodada final (KI-10, KI-11); Xicrc (SG-01), macro de memória
   (SG-02), pinagem (SG-03), reset (SG-04), firmware oficial (SG-05); vídeo.
+
+## [v1.1-final] — 26/09/2026 — etapa final
+
+### Adicionado
+- Gate-level com atrasos reais (SDF) na netlist final: `scripts/core/gls_sdf.sh`
+  (`make gls-sdf`), corners `max_ss`, `min_ff` e `nom_tt` em paralelo, a 30 ns.
+  Firmware + 3 programas aleatórios PASS nos três; **controle negativo** (mesmo
+  firmware a 10 ns no corner lento) falha como esperado (ADR-018).
+- `tools/sky130_timing_models.awk`: cópia ajustada dos modelos temporais da
+  SKY130 para o Icarus 12 (sinais `*_delayed` das entradas ligados; linha
+  inválida da `lpflow_bleeder` removida). O PDK não é alterado.
+- Varredura física: `config_sweep_28ns.json` (−1,35 ns, 13 caminhos) e
+  `config_sweep_u45.json` (−0,82 ns, 3 caminhos) violam setup; 30 ns / 35 % é
+  o ponto ótimo. Caminho crítico: leitura de operando + multiplicador 32×32
+  (`mult_out_reg`) (ADR-019).
+- Dashboard publicado no GitHub Pages (`.github/workflows/pages.yml`), com
+  tabela da varredura e linhas do GLS com SDF.
+- README: origem do projeto, histórico de versões, imagens clicáveis, captura
+  completa do dashboard, próximos passos separados em concluídos / dependentes
+  da organização / técnicos para uma v2.
+
+### Corrigido
+- Método do GLS com SDF: o `timescale` de 1 ns entrava depois do testbench
+  (clock de "30" virava 30 s e os atrasos sumiam). Corrigido e protegido pelo
+  controle negativo.
+- `sync_mirror.sh` copia os SDFs; pastas órfãs de rodadas antigas removidas do
+  espelho.
+
+### Pendente
+- Dependem da organização: CRC (SG-01), memória e pinagem (SG-02/03),
+  firmware oficial (SG-05). Técnicos (v2): multiplicador em dois ciclos,
+  reparo após antena (KI-10/11), timing checks na simulação (KI-12), tapeout.

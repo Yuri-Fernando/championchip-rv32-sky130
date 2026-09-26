@@ -171,3 +171,33 @@ depois do reparo de antena, o que exige um fluxo customizado.
 
 **Outros:** logs inchados por barras de progresso truncadas ("…"), corrigido no
 `clean_log.py`; CI atualizado para actions v7 (Node 24).
+
+## Sessão 6 — 26/09/2026: etapa final (SDF, varredura, publicação)
+
+**Pedido:** rodar os próximos passos que dependem só do projeto, atualizar
+README (origem, histórico, imagens clicáveis, dashboard com todos os
+resultados), slides, artifact, versão, e preparar o post do LinkedIn.
+
+**Gate-level com SDF.** Três obstáculos do Icarus 12 com os modelos temporais
+da SKY130, resolvidos numa cópia dos modelos (sem tocar no PDK): sinais
+`*_delayed` sem driver (o Icarus não implementa `$setuphold`), uma célula
+`sdlclkp` cujo `*_delayed` vem da própria lógica (por isso a regra só vale
+para entradas) e uma linha inválida na `lpflow_bleeder`. A DMEM comportamental
+ganhou 3 ns de tempo de acesso no modo SDF, para não criar uma corrida que uma
+SRAM real não teria.
+
+**O erro que o método quase deixou passar.** A primeira execução passou, mas
+terminou em 10.530 s de tempo simulado: o arquivo com `timescale 1ns` estava
+depois do testbench na lista de compilação. O clock de "30" era de 30 s e os
+atrasos do SDF não tinham efeito nenhum. Corrigido (10,53 µs, 351 ciclos) e
+acrescentado o controle negativo: a 10 ns o firmware tem de falhar — e falhou.
+
+**Resultado:** firmware + 3 programas PASS em `max_ss`, `min_ff` e `nom_tt`
+(corners rodando em paralelo, ~10–15 min por simulação).
+
+**Varredura:** 28 ns viola setup (−1,35 ns, 13 caminhos) e 45 % de utilização
+também (−0,82 ns, 3 caminhos; die 22 % menor). O caminho crítico, conferido na
+netlist, termina em `mult_out_reg`. Conclusão: o limite é da microarquitetura.
+
+**Incidentes:** o Docker Desktop estava parado depois do desligamento da noite
+anterior; a primeira rodada de 28 ns falhou por isso e foi relançada.

@@ -1,0 +1,57 @@
+{
+  "DESIGN_NAME": "rv32_core",
+  "VERILOG_FILES": [
+    "dir::../../rtl/core/regfile.sv",
+    "dir::../../rtl/core/alu.sv",
+    "dir::../../rtl/core/imm_gen.sv",
+    "dir::../../rtl/core/branch_cmp.sv",
+    "dir::../../rtl/core/mult_unit.sv",
+    "dir::../../rtl/core/crc_unit.sv",
+    "dir::../../rtl/core/lsu.sv",
+    "dir::../../rtl/core/control_unit.sv",
+    "dir::../../rtl/core/rv32_core.sv"
+  ],
+  "VERILOG_INCLUDE_DIRS": [
+    "dir::../../rtl/core"
+  ],
+  "CLOCK_PORT": "clk_i",
+  "CLOCK_NET": "clk_i",
+  "CLOCK_PERIOD": 28,
+  "FP_SIZING": "relative",
+  "FP_CORE_UTIL": 35,
+  "PL_TARGET_DENSITY_PCT": 45,
+  "PDK": "sky130A",
+  "STD_CELL_LIBRARY": "sky130_fd_sc_hd",
+  "SYNTH_STRATEGY": "AREA 0",
+  "RUN_HEURISTIC_DIODE_INSERTION": true,
+  "RUN_ANTENNA_REPAIR": true,
+  "RUN_POST_GRT_DESIGN_REPAIR": true,
+  "RUN_POST_GRT_RESIZER_TIMING": true,
+  "GRT_ANTENNA_ITERS": 10,
+  "GRT_ANTENNA_MARGIN": 30,
+  "DIODE_ON_PORTS": "both",
+  "RSZ_CORNERS": [
+    "nom_tt_025C_1v80",
+    "min_tt_025C_1v80",
+    "max_tt_025C_1v80",
+    "nom_ss_100C_1v60",
+    "min_ss_100C_1v60",
+    "max_ss_100C_1v60",
+    "nom_ff_n40C_1v95",
+    "min_ff_n40C_1v95",
+    "max_ff_n40C_1v95"
+  ],
+  "CTS_CORNERS": [
+    "nom_tt_025C_1v80",
+    "nom_ss_100C_1v60",
+    "max_ss_100C_1v60",
+    "nom_ff_n40C_1v95"
+  ],
+  "PNR_SDC_FILE": "dir::../constraints/signoff.sdc",
+  "SIGNOFF_SDC_FILE": "dir::../constraints/signoff.sdc",
+  "DESIGN_REPAIR_MAX_SLEW_PCT": 40,
+  "DESIGN_REPAIR_MAX_CAP_PCT": 40,
+  "GRT_DESIGN_REPAIR_MAX_SLEW_PCT": 40,
+  "GRT_DESIGN_REPAIR_MAX_CAP_PCT": 40,
+  "HEURISTIC_ANTENNA_THRESHOLD": 400
+}

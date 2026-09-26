@@ -34,9 +34,9 @@ PHASES = [
     ("F5", "Zmmul + Xicrc", "partial", "Zmmul 4/4; Xicrc bloqueada por especificação (SG-01)"),
     ("F6", "Firmware", "partial", "Firmware autoral PASS; oficial indisponível (SG-05)"),
     ("F7", "OpenLane baseline", "done", "GDSII com DRC 0, LVS 0, timing fechado"),
-    ("F8", "Otimização física", "done", "30 ns (33,3 MHz) com SDC de sign-off completo: nenhum pino acima do limite de slew da biblioteca; antena e cap residuais"),
-    ("F9", "Gate-level regression", "done", "Netlists das 4 rodadas equivalentes ao modelo de referência"),
-    ("F10", "Relatório / vídeo / submissão", "partial", "Relatório, dashboard, notebooks, slides e roteiro prontos; vídeo a gravar"),
+    ("F8", "Otimização física", "done", "30 ns (33,3 MHz) com SDC de sign-off: nenhum pino acima do limite de slew; a varredura (28 ns, utilização 45 %) viola setup — 30 ns/35 % é o ponto ótimo"),
+    ("F9", "Gate-level regression", "done", "Netlists das 4 rodadas equivalentes ao modelo; a final também com atrasos reais (SDF) nos corners ss, ff e tt"),
+    ("F10", "Relatório / vídeo / submissão", "partial", "Relatório, dashboard (GitHub Pages), notebooks, slides e roteiro prontos; vídeo a gravar"),
 ]
 
 
@@ -69,6 +69,8 @@ def physical_runs() -> list[dict]:
             "clock_mhz": round(1000 / period, 1) if period else None,
             "fmax_mhz_worst_corner": round(1000 / (period - wss), 1) if period and wss is not None and period > wss else None,
             "setup_worst_slack_ns": wss,
+            "setup_violations": m.get("timing__setup_vio__count"),
+            "core_util_pct": cfg.get("FP_CORE_UTIL"),
             "setup_ws_by_corner": {c: m.get(f"timing__setup__ws__corner:{c}") for c in CORNERS},
             "hold_worst_slack_ns": m.get("timing__hold__ws"),
             "setup_tns": m.get("timing__setup__tns"),
@@ -123,8 +125,12 @@ def main() -> None:
     regression = read_csv(ROOT / "reports/regression_summary.csv")
     mutation = read_csv(ROOT / "reports/mutation.csv")
     gls = read_csv(ROOT / "reports/gls_summary.csv")
+    gls_sdf = read_csv(ROOT / "reports/gls_sdf_summary.csv")
     coverage = read_csv(ROOT / "docs/evidence/isa/random_coverage.csv")
-    runs = physical_runs()
+    allruns = physical_runs()
+    # rodadas de varredura (sweep_*) exploram o limite; nao entram na comparacao principal
+    sweep = [r for r in allruns if r["label"].startswith("sweep")]
+    runs = [r for r in allruns if not r["label"].startswith("sweep")]
 
     summary = {
         "generated": date.today().isoformat(),
@@ -148,9 +154,11 @@ def main() -> None:
             "mutation": mutation,
             "mutation_killed": sum(1 for r in mutation if r["status"] == "MORTO"),
             "gls": gls,
+            "gls_sdf": gls_sdf,
             "random_coverage": [{"instrucao": r["instrucao"], "execucoes": int(r["execucoes"])} for r in coverage],
         },
         "physical": runs,
+        "sweep": sweep,
         "phases": [{"id": a, "name": b, "status": c, "note": d} for a, b, c, d in PHASES],
         "spec_gaps": spec_gaps(),
     }
@@ -171,7 +179,8 @@ def main() -> None:
              f"- ISA: **{isa_pass}/{len(matrix)}** instrucoes fechadas",
              f"- Regressao: **{summary['verification']['regression_pass']}/{len(regression)}** suites PASS",
              f"- Teste de mutacao: **{summary['verification']['mutation_killed']}/{len(mutation)}** mutantes detectados",
-             f"- Gate-level: " + (", ".join(f"{r['teste']}={r['status']}" for r in gls) or "nao executado"), ""]
+             f"- Gate-level: " + (", ".join(f"{r['teste']}={r['status']}" for r in gls) or "nao executado"),
+             f"- Gate-level com SDF (atrasos reais): " + (", ".join(f"{r['corner']}/{r['teste']}={r['status']}" for r in gls_sdf) or "nao executado"), ""]
     lines += ["| run | SDC | clock | folga setup (pior corner) | Fmax est. | DRC | LVS | antena | slew (limite) | cap | area std-cell | potencia |",
               "|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for r in runs:
@@ -181,6 +190,15 @@ def main() -> None:
                      f"{r['power_total_w'] * 1000:.1f} mW |")
     lines += ["", "Rodadas com base.sdc usam clock ideal, sem derating/incerteza e o limite de slew da biblioteca (1,5 ns);",
               "signoff.sdc tem as restricoes completas do OpenLane (limite 0,75 ns, clock propagado, derating 5 %). Ver ADR-017."]
+    if sweep:
+        ref = next((r for r in runs if r["label"] == "final"), None)
+        lines += ["", "## Varredura (limite de frequencia e densidade, SDC de sign-off)", "",
+                  "| rodada | clock | utilizacao | folga setup | caminhos violando | DRC | LVS | antena | area do die |",
+                  "|---|---|---|---|---|---|---|---|---|"]
+        for r in ([ref] if ref else []) + sweep:
+            lines.append(f"| {r['label']} | {r['clock_period_ns']:.0f} ns ({r['clock_mhz']} MHz) | {r['core_util_pct']} % | "
+                         f"{r['setup_worst_slack_ns']:.2f} ns | {r['setup_violations']} | {r['drc_klayout']} | {r['lvs_errors']} | "
+                         f"{r['antenna_violations']} | {r['die_area_um2']:.0f} um2 |")
     (out / "RESUMO.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
     print(f"reports/summary.json: ISA {isa_pass}/{len(matrix)}, {len(regression)} suites, {len(mutation)} mutantes, {len(runs)} runs fisicos")
 

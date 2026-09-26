@@ -5,7 +5,7 @@
 # =============================================================================
 PY ?= python
 
-.PHONY: help build-image lint test mutation firmware gls openlane openlane-opt openlane-final reports dashboard notebooks all
+.PHONY: help build-image lint test mutation firmware gls gls-sdf openlane openlane-opt openlane-final reports dashboard notebooks all
 
 help:
 	@echo "build-image   imagem Docker com todas as ferramentas (uma vez)"
@@ -17,6 +17,7 @@ help:
 	@echo "openlane-opt  RTL -> GDSII otimizado (30 ns, ~50 min)"
 	@echo "openlane-final RTL -> GDSII final (30 ns, SDC de sign-off completo)"
 	@echo "gls           simulacao gate-level da netlist pos-layout"
+	@echo "gls-sdf       gate-level com atrasos reais (SDF) nos corners extremos"
 	@echo "reports       agrega evidencias em reports/"
 	@echo "dashboard     gera dashboard/index.html"
 	@echo "notebooks     regenera e executa os notebooks"
@@ -48,6 +49,9 @@ openlane-final:
 
 gls:
 	bash scripts/run_gls.sh
+
+gls-sdf:
+	bash scripts/run_gls_sdf.sh
 
 reports:
 	$(PY) tools/build_reports.py

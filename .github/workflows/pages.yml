@@ -1,0 +1,45 @@
+# =============================================================================
+# Pages - publica o dashboard interativo (tools/build_dashboard.py) no GitHub
+# Pages a cada push no main. O HTML é gerado aqui a partir de
+# reports/summary.json e das evidências versionadas; não fica no git.
+# =============================================================================
+name: dashboard-pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Gerar dashboard
+        run: python tools/build_dashboard.py
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: dashboard
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-24.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

@@ -1,0 +1,11 @@
+netlist: docs/evidence/openlane/run_final/rv32_core.nl.v · clock 30 ns · corners: max_ss_100C_1v60 min_ff_n40C_1v95 nom_tt_025C_1v80
+==== corners em paralelo: max_ss_100C_1v60 min_ff_n40C_1v95 nom_tt_025C_1v80 ====
+==== controle negativo: max_ss_100C_1v60 com clock de 10 ns (deve falhar), em paralelo ====
+PASS  sdf/nom_tt_025C_1v80/firmware
+PASS  sdf/max_ss_100C_1v60/firmware
+PASS  sdf/min_ff_n40C_1v95/firmware
+OK    controle negativo falhou como esperado (atrasos reais aplicados)
+PASS  sdf/nom_tt_025C_1v80/random (3/3 programas identicos ao modelo de referencia)
+PASS  sdf/min_ff_n40C_1v95/random (3/3 programas identicos ao modelo de referencia)
+PASS  sdf/max_ss_100C_1v60/random (3/3 programas identicos ao modelo de referencia)
+==== GL-SDF RESULTADO: NETLIST CORRETA COM ATRASOS REAIS NOS CORNERS ====

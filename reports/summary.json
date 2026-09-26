@@ -573,6 +573,43 @@
         "status": "PASS"
       }
     ],
+    "gls_sdf": [
+      {
+        "corner": "max_ss_100C_1v60",
+        "teste": "firmware",
+        "status": "PASS"
+      },
+      {
+        "corner": "max_ss_100C_1v60",
+        "teste": "random 3 programas",
+        "status": "PASS"
+      },
+      {
+        "corner": "min_ff_n40C_1v95",
+        "teste": "firmware",
+        "status": "PASS"
+      },
+      {
+        "corner": "min_ff_n40C_1v95",
+        "teste": "random 3 programas",
+        "status": "PASS"
+      },
+      {
+        "corner": "nom_tt_025C_1v80",
+        "teste": "firmware",
+        "status": "PASS"
+      },
+      {
+        "corner": "nom_tt_025C_1v80",
+        "teste": "random 3 programas",
+        "status": "PASS"
+      },
+      {
+        "corner": "max_ss_100C_1v60",
+        "teste": "controle negativo 10 ns (deve falhar)",
+        "status": "FALHOU COMO ESPERADO"
+      }
+    ],
     "random_coverage": [
       {
         "instrucao": "ADDI",
@@ -744,6 +781,8 @@
       "clock_mhz": 25.0,
       "fmax_mhz_worst_corner": 35.2,
       "setup_worst_slack_ns": 11.568808460876683,
+      "setup_violations": 0,
+      "core_util_pct": 35,
       "setup_ws_by_corner": {
         "nom_tt_025C_1v80": 25.7232429304604,
         "min_tt_025C_1v80": 26.118373980634825,
@@ -806,6 +845,8 @@
       "clock_mhz": 33.3,
       "fmax_mhz_worst_corner": 34.7,
       "setup_worst_slack_ns": 1.1448264882345778,
+      "setup_violations": 0,
+      "core_util_pct": 35,
       "setup_ws_by_corner": {
         "nom_tt_025C_1v80": 15.298527322422876,
         "min_tt_025C_1v80": 15.750849959016115,
@@ -865,6 +906,8 @@
       "clock_mhz": 33.3,
       "fmax_mhz_worst_corner": 36.6,
       "setup_worst_slack_ns": 2.64165941043381,
+      "setup_violations": 0,
+      "core_util_pct": 35,
       "setup_ws_by_corner": {
         "nom_tt_025C_1v80": 16.02844125016001,
         "min_tt_025C_1v80": 16.458348039162896,
@@ -944,6 +987,8 @@
       "clock_mhz": 33.3,
       "fmax_mhz_worst_corner": 33.4,
       "setup_worst_slack_ns": 0.08948930738623627,
+      "setup_violations": 0,
+      "core_util_pct": 35,
       "setup_ws_by_corner": {
         "nom_tt_025C_1v80": 14.665726825842308,
         "min_tt_025C_1v80": 15.122758584549981,
@@ -986,6 +1031,182 @@
         "FP_SIZING": "relative",
         "FP_CORE_UTIL": 35,
         "PL_TARGET_DENSITY_PCT": 45,
+        "PDK": "sky130A",
+        "STD_CELL_LIBRARY": "sky130_fd_sc_hd",
+        "SYNTH_STRATEGY": "AREA 0",
+        "RUN_HEURISTIC_DIODE_INSERTION": true,
+        "RUN_ANTENNA_REPAIR": true,
+        "RUN_POST_GRT_DESIGN_REPAIR": true,
+        "RUN_POST_GRT_RESIZER_TIMING": true,
+        "GRT_ANTENNA_ITERS": 10,
+        "GRT_ANTENNA_MARGIN": 30,
+        "DIODE_ON_PORTS": "both",
+        "RSZ_CORNERS": [
+          "nom_tt_025C_1v80",
+          "min_tt_025C_1v80",
+          "max_tt_025C_1v80",
+          "nom_ss_100C_1v60",
+          "min_ss_100C_1v60",
+          "max_ss_100C_1v60",
+          "nom_ff_n40C_1v95",
+          "min_ff_n40C_1v95",
+          "max_ff_n40C_1v95"
+        ],
+        "CTS_CORNERS": [
+          "nom_tt_025C_1v80",
+          "nom_ss_100C_1v60",
+          "max_ss_100C_1v60",
+          "nom_ff_n40C_1v95"
+        ],
+        "PNR_SDC_FILE": "dir::../constraints/signoff.sdc",
+        "SIGNOFF_SDC_FILE": "dir::../constraints/signoff.sdc",
+        "DESIGN_REPAIR_MAX_SLEW_PCT": 40,
+        "DESIGN_REPAIR_MAX_CAP_PCT": 40,
+        "GRT_DESIGN_REPAIR_MAX_SLEW_PCT": 40,
+        "GRT_DESIGN_REPAIR_MAX_CAP_PCT": 40,
+        "HEURISTIC_ANTENNA_THRESHOLD": 400
+      }
+    }
+  ],
+  "sweep": [
+    {
+      "label": "sweep_28ns",
+      "dir": "docs/evidence/openlane/run_sweep_28ns",
+      "clock_period_ns": 28.0,
+      "clock_mhz": 35.7,
+      "fmax_mhz_worst_corner": 34.1,
+      "setup_worst_slack_ns": -1.3476153907557722,
+      "setup_violations": 13,
+      "core_util_pct": 35,
+      "setup_ws_by_corner": {
+        "nom_tt_025C_1v80": 13.024646618776826,
+        "min_tt_025C_1v80": 13.464927332015202,
+        "max_tt_025C_1v80": 12.596445132387993,
+        "nom_ss_100C_1v60": -0.5661995477173314,
+        "min_ss_100C_1v60": 0.23814906276634945,
+        "max_ss_100C_1v60": -1.3476153907557722,
+        "nom_ff_n40C_1v95": 17.686098419719606,
+        "min_ff_n40C_1v95": 17.884874532027105,
+        "max_ff_n40C_1v95": 17.384012943424477
+      },
+      "hold_worst_slack_ns": 0.1166941021287528,
+      "setup_tns": -4.9510299483779585,
+      "hold_tns": 0,
+      "drc_klayout": 0,
+      "drc_magic": 0,
+      "lvs_errors": 0,
+      "antenna_violations": 22,
+      "max_slew_violations": 330,
+      "max_cap_violations": 82,
+      "max_fanout_violations": 395,
+      "sdc": "signoff.sdc",
+      "sdc_complete": true,
+      "slew_limit_ns": 0.75,
+      "antenna_diodes": 3663,
+      "core_area_um2": 653656,
+      "die_area_um2": 681917,
+      "die_w_um": 820.44,
+      "die_h_um": 831.16,
+      "stdcell_area_um2": 246853,
+      "utilization": 0.37765,
+      "instances": 36744,
+      "power_total_w": 0.047572605311870575,
+      "wirelength_um": 1144933,
+      "config": {
+        "DESIGN_NAME": "rv32_core",
+        "CLOCK_PORT": "clk_i",
+        "CLOCK_NET": "clk_i",
+        "CLOCK_PERIOD": 28,
+        "FP_SIZING": "relative",
+        "FP_CORE_UTIL": 35,
+        "PL_TARGET_DENSITY_PCT": 45,
+        "PDK": "sky130A",
+        "STD_CELL_LIBRARY": "sky130_fd_sc_hd",
+        "SYNTH_STRATEGY": "AREA 0",
+        "RUN_HEURISTIC_DIODE_INSERTION": true,
+        "RUN_ANTENNA_REPAIR": true,
+        "RUN_POST_GRT_DESIGN_REPAIR": true,
+        "RUN_POST_GRT_RESIZER_TIMING": true,
+        "GRT_ANTENNA_ITERS": 10,
+        "GRT_ANTENNA_MARGIN": 30,
+        "DIODE_ON_PORTS": "both",
+        "RSZ_CORNERS": [
+          "nom_tt_025C_1v80",
+          "min_tt_025C_1v80",
+          "max_tt_025C_1v80",
+          "nom_ss_100C_1v60",
+          "min_ss_100C_1v60",
+          "max_ss_100C_1v60",
+          "nom_ff_n40C_1v95",
+          "min_ff_n40C_1v95",
+          "max_ff_n40C_1v95"
+        ],
+        "CTS_CORNERS": [
+          "nom_tt_025C_1v80",
+          "nom_ss_100C_1v60",
+          "max_ss_100C_1v60",
+          "nom_ff_n40C_1v95"
+        ],
+        "PNR_SDC_FILE": "dir::../constraints/signoff.sdc",
+        "SIGNOFF_SDC_FILE": "dir::../constraints/signoff.sdc",
+        "DESIGN_REPAIR_MAX_SLEW_PCT": 40,
+        "DESIGN_REPAIR_MAX_CAP_PCT": 40,
+        "GRT_DESIGN_REPAIR_MAX_SLEW_PCT": 40,
+        "GRT_DESIGN_REPAIR_MAX_CAP_PCT": 40,
+        "HEURISTIC_ANTENNA_THRESHOLD": 400
+      }
+    },
+    {
+      "label": "sweep_u45",
+      "dir": "docs/evidence/openlane/run_sweep_u45",
+      "clock_period_ns": 30.0,
+      "clock_mhz": 33.3,
+      "fmax_mhz_worst_corner": 32.4,
+      "setup_worst_slack_ns": -0.8202505573597297,
+      "setup_violations": 3,
+      "core_util_pct": 45,
+      "setup_ws_by_corner": {
+        "nom_tt_025C_1v80": 14.22204083644649,
+        "min_tt_025C_1v80": 14.722383728837345,
+        "max_tt_025C_1v80": 13.75515207335821,
+        "nom_ss_100C_1v60": -0.020893509735934557,
+        "min_ss_100C_1v60": 0.8320668833896087,
+        "max_ss_100C_1v60": -0.8202505573597297,
+        "nom_ff_n40C_1v95": 18.880805009415248,
+        "min_ff_n40C_1v95": 19.1234624659675,
+        "max_ff_n40C_1v95": 18.657641293369892
+      },
+      "hold_worst_slack_ns": 0.11166801133182469,
+      "setup_tns": -0.8590568499707845,
+      "hold_tns": 0,
+      "drc_klayout": 0,
+      "drc_magic": 0,
+      "lvs_errors": 0,
+      "antenna_violations": 38,
+      "max_slew_violations": 488,
+      "max_cap_violations": 65,
+      "max_fanout_violations": 376,
+      "sdc": "signoff.sdc",
+      "sdc_complete": true,
+      "slew_limit_ns": 0.75,
+      "antenna_diodes": 3051,
+      "core_area_um2": 508440,
+      "die_area_um2": 533200,
+      "die_w_um": 724.865,
+      "die_h_um": 735.585,
+      "stdcell_area_um2": 237887,
+      "utilization": 0.467876,
+      "instances": 34060,
+      "power_total_w": 0.0426451712846756,
+      "wirelength_um": 1040369,
+      "config": {
+        "DESIGN_NAME": "rv32_core",
+        "CLOCK_PORT": "clk_i",
+        "CLOCK_NET": "clk_i",
+        "CLOCK_PERIOD": 30,
+        "FP_SIZING": "relative",
+        "FP_CORE_UTIL": 45,
+        "PL_TARGET_DENSITY_PCT": 55,
         "PDK": "sky130A",
         "STD_CELL_LIBRARY": "sky130_fd_sc_hd",
         "SYNTH_STRATEGY": "AREA 0",
@@ -1076,19 +1297,19 @@
       "id": "F8",
       "name": "Otimização física",
       "status": "done",
-      "note": "30 ns (33,3 MHz) com SDC de sign-off completo: nenhum pino acima do limite de slew da biblioteca; antena e cap residuais"
+      "note": "30 ns (33,3 MHz) com SDC de sign-off: nenhum pino acima do limite de slew; a varredura (28 ns, utilização 45 %) viola setup — 30 ns/35 % é o ponto ótimo"
     },
     {
       "id": "F9",
       "name": "Gate-level regression",
       "status": "done",
-      "note": "Netlists das 4 rodadas equivalentes ao modelo de referência"
+      "note": "Netlists das 4 rodadas equivalentes ao modelo; a final também com atrasos reais (SDF) nos corners ss, ff e tt"
     },
     {
       "id": "F10",
       "name": "Relatório / vídeo / submissão",
       "status": "partial",
-      "note": "Relatório, dashboard, notebooks, slides e roteiro prontos; vídeo a gravar"
+      "note": "Relatório, dashboard (GitHub Pages), notebooks, slides e roteiro prontos; vídeo a gravar"
     }
   ],
   "spec_gaps": [

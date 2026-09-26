@@ -230,4 +230,24 @@ A netlist final gerada pelo OpenLane (~37 mil células `sky130_fd_sc_hd`) substi
 o RTL dentro do mesmo SoC e roda o firmware e os programas aleatórios. As netlists
 baseline, opt30 e sem_diodos passaram no mesmo teste (`docs/evidence/logs/gls_*.log`)."""),
     ("code", 'run("bash scripts/run_gls.sh docs/evidence/openlane/run_final/rv32_core.nl.v", tail=8)\npd.read_csv(ROOT / "reports/gls_summary.csv")'),
+    ("md", """## Gate-level com atrasos reais (SDF)
+
+O teste acima usa modelos funcionais (atraso unitário). Aqui a netlist final roda
+com os modelos temporais das células e o SDF extraído do layout, a 30 ns, nos
+corners lento (`max_ss`), rápido (`min_ff`) e típico (`nom_tt`). O **controle
+negativo** roda o mesmo firmware com clock de 10 ns no corner lento: ele *tem* de
+falhar, senão os atrasos não estariam sendo aplicados (ADR-018).
+
+> Cada simulação com SDF leva de 10 a 15 minutos. Mude `RODAR_SDF` para `True`
+> para refazer; abaixo, o resultado salvo."""),
+    ("code", 'RODAR_SDF = False\nif RODAR_SDF:\n    run("bash scripts/run_gls_sdf.sh", tail=14)\npd.read_csv(ROOT / "reports/gls_sdf_summary.csv")'),
+    ("md", """## Varredura: onde está o limite
+
+Mesma configuração da rodada final, mudando um parâmetro por vez (ADR-019). Mais
+frequência (28 ns) e mais densidade (45 % de utilização) violam setup no corner
+lento: 30 ns / 35 % é o ponto ótimo desta microarquitetura."""),
+    ("code", """S = summary()
+sw = [r for r in S["physical"] if r["label"] == "final"] + S.get("sweep", [])
+pd.DataFrame(sw)[["label", "clock_period_ns", "clock_mhz", "core_util_pct", "setup_worst_slack_ns",
+                  "setup_violations", "drc_klayout", "lvs_errors", "antenna_violations", "die_area_um2"]].set_index("label")"""),
 ])

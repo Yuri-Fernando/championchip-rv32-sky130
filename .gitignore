@@ -14,6 +14,7 @@ openlane/runs/
 docs/evidence/openlane/*/*.gds
 docs/evidence/openlane/*/*.nl.v
 docs/evidence/openlane/*/*.gl.v
+docs/evidence/openlane/*/sdf/
 
 # SO/editor
 .DS_Store

@@ -124,6 +124,14 @@ firmware e 10 programas aleatórios produzem resultado idêntico ao modelo de
 referência, **nas quatro netlists** (baseline, otimizada, sem diodos e final) — ver
 `docs/evidence/logs/gls_baseline.log`, `gls_opt30.log`, `gls_sem_diodos.log` e `gls_final.log` (ADR-015).
 
+**Com atrasos reais (SDF).** A netlist final também foi simulada com os modelos
+temporais da `sky130_fd_sc_hd` e o SDF que o OpenLane extraiu do layout, a
+30 ns, nos corners `max_ss_100C_1v60` (lento), `min_ff_n40C_1v95` (rápido) e
+`nom_tt_025C_1v80`: firmware e 3 programas aleatórios PASS nos três. Um
+controle negativo — o mesmo firmware no corner lento com clock de 10 ns —
+falha, provando que os atrasos estão aplicados (`gls_sdf_final.log`,
+ADR-018).
+
 ## 5. Firmware
 
 Firmware oficial da competição **não está disponível** neste repositório
@@ -209,6 +217,13 @@ netlist final passou na simulação gate-level (`gls_final.log`).
 antena (pior razão 4,34). Vêm da ordem do fluxo: diodos e reparo de antena
 rodam depois do reparo de projeto — KI-10 e KI-11 em
 `docs/governance/KNOWN_ISSUES.md`, com os próximos passos.
+
+**Varredura (ADR-019).** Com a configuração da final, 28 ns (35,7 MHz) viola
+setup no corner lento (−1,35 ns, 13 caminhos) e 45 % de utilização também
+(−0,82 ns, 3 caminhos, die 22 % menor). O caminho crítico termina no
+registrador do multiplicador (`mult_out_reg`): leitura de operando e
+multiplicação 32×32 no mesmo ciclo. 30 ns / 35 % é o ponto ótimo; ir além
+exige mudar a microarquitetura.
 
 Artefatos em [`docs/evidence/openlane/`](../evidence/openlane/) (`run_best/` =
 baseline, `run_opt30/` = otimizada, `run_sem_diodos/`, `run_final/` = final): `rv32_core.gds` (GDSII), `rv32_core.nl.v`

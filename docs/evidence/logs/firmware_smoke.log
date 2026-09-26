@@ -3,4 +3,4 @@ VCD info: dumpfile docs/evidence/waveforms/firmware_smoke.vcd opened for output.
 [INFO] result_sig=600dc0de testnum=9 pc_final=0040018c
 [ pass ] firmware smoke-test PASS (9 blocos)
 === tb_firmware_smoke: PASS ===
-tb/firmware/tb_firmware_smoke.sv:70: $finish called at 3510 (1s)
+tb/firmware/tb_firmware_smoke.sv:82: $finish called at 3510 (1s)
