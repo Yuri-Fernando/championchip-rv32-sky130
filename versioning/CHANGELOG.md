@@ -156,3 +156,29 @@ BLOCKED-XICRC — ver SPEC_GAPS.md SG-01.
 - Xicrc (SG-01), macro de memória (SG-02), pinagem (SG-03), reset (SG-04),
   firmware oficial (SG-05); slew/cap residual (KI-10) e antena (KI-11);
   gravação do vídeo.
+
+## [v1.0-signoff] — 26/09/2026
+
+### Corrigido
+- SDC incompleto (segunda causa das violações de slew): novo
+  `openlane/constraints/signoff.sdc` com as restrições completas do SDC padrão
+  do OpenLane (meta de transição 0,75 ns, fanout 10, clock propagado,
+  incerteza 0,25 ns, derating 5 %, célula de entrada e carga de saída).
+  Rodada final: **nenhum pino acima do limite de slew da biblioteca**
+  (eram 3.139), timing fechado nos 9 corners com restrições realistas
+  (folga 0,09 ns), DRC 0, LVS 0, GLS PASS (ADR-017).
+- `tools/clean_log.py`: barras de progresso truncadas com "…" viravam dezenas
+  de milhares de linhas repetidas nos logs.
+- CI: `actions/checkout@v7` e `actions/upload-artifact@v7` (Node 24; o Node 20
+  foi descontinuado nos runners do GitHub).
+
+### Alterado
+- Rodada da ADR-016 renomeada para `run_sem_diodos` (`config_sem_diodos.json`);
+  `run_final` e `config_final.json` passam a ser a rodada com SDC de sign-off.
+- Relatórios, dashboard e slides mostram o SDC e o limite de slew de cada
+  rodada, porque as folgas das rodadas com `base.sdc` são otimistas.
+
+### Pendente
+- Cap (74), fanout (408), 263 pinos acima da meta de 0,75 ns e 24 violações de
+  antena na rodada final (KI-10, KI-11); Xicrc (SG-01), macro de memória
+  (SG-02), pinagem (SG-03), reset (SG-04), firmware oficial (SG-05); vídeo.

@@ -187,7 +187,7 @@ Fluxo físico (OpenLane 2 · SKY130) — baseline 40 ns
    ↓
 Verificação avançada (modelo de referência · randomizado · mutação · gate-level)
    ↓
-Otimização física (30 ns) e correção de slew/cap multi-corner
+Otimização física (30 ns) · correção de slew/cap · SDC de sign-off completo
 ```
 
 **Achados reais durante o desenvolvimento (não plantados):**
@@ -212,10 +212,20 @@ Otimização física (30 ns) e correção de slew/cap multi-corner
    roda depois do reparo e colocava **16.570 diodos (~35 % das células)**; a
    capacitância somada degradava o slew no corner `ss` (100 °C, 1,60 V).
    Desligada, com reparo de antena direcionado no lugar: slew −59 %, células
-   −34 %, área −15 % e folga de setup de 1,14 para 2,64 ns
-   ([ADR-016](docs/governance/DECISIONS.md)). Restam violações no corner lento
-   e 19 de antena, documentadas em [KNOWN_ISSUES](docs/governance/KNOWN_ISSUES.md).
-5. **Ambiente** — o Docker não monta pastas sincronizadas (Google Drive), o OpenLane
+   −34 % e área −15 % ([ADR-016](docs/governance/DECISIONS.md)).
+5. **O SDC estava incompleto** — mesmo sem os diodos, 3.139 pinos passavam do
+   limite de slew da biblioteca. O `base.sdc` do projeto só criava o clock e os
+   atrasos de I/O: sem `set_max_transition` o reparo mirava o limite frouxo da
+   biblioteca (1,5 ns) com parasitas estimados, e sem `set_propagated_clock` a
+   análise pós-CTS usava clock ideal. Com o SDC de sign-off completo (o padrão
+   do OpenLane: meta de 0,75 ns, fanout 10, derating de 5 %, incerteza de
+   0,25 ns), mais margem de reparo e diodos só em redes acima de 400 µm:
+   **nenhum pino acima do limite da biblioteca** e timing fechado nos 9 corners
+   com restrições realistas. Foram 4 variantes, uma descartada por violar setup
+   ([ADR-017](docs/governance/DECISIONS.md)). O que sobrou (cap, fanout e 24
+   violações de antena) vem da ordem do fluxo e está em
+   [KNOWN_ISSUES](docs/governance/KNOWN_ISSUES.md).
+6. **Ambiente** — o Docker não monta pastas sincronizadas (Google Drive), o OpenLane
    não roda no Python do Windows (`signal.SIGKILL`) e o modo `--dockerized`
    exige que os caminhos valham para o daemon em containers aninhados. Cada
    solução está registrada como ADR (007, 009–012).
@@ -253,16 +263,17 @@ Otimização física (30 ns) e correção de slew/cap multi-corner
 
 **Implementação física (OpenLane 2 · sky130_fd_sc_hd · 9 corners)**
 
-| Rodada | Clock | Folga de setup (pior corner) | Fmax estimada | DRC | LVS | Antena | Slew / Cap (corner ss) | Células | Área std-cell | Potência |
-|---|---|---|---|---|---|---|---|---|---|---|
-| baseline | 40 ns · 25 MHz | 11,57 ns | 35,2 MHz | 0 | 0 | 2 | 7.486 / 143 | 46.827 | 259.760 µm² | 31,9 mW |
-| opt30 | 30 ns · 33,3 MHz | 1,14 ns | 34,7 MHz | 0 | 0 | 2 | 7.620 / 140 | 46.826 | 259.752 µm² | 42,6 mW |
-| **final** | **30 ns · 33,3 MHz** | **2,64 ns** | **36,6 MHz** | **0** | **0** | 19 | **3.139 / 111** | **30.947** | **220.016 µm²** | **42,0 mW** |
+| Rodada | SDC | Clock | Folga de setup (pior corner) | Fmax estimada | DRC · LVS | Antena | Slew acima do limite | Cap | Células (diodos) | Área std-cell | Potência |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| baseline | base | 40 ns · 25 MHz | 11,57 ns | 35,2 MHz | 0 · 0 | 2 | 7.486 (1,5 ns) | 143 | 46.827 (16.568) | 259.760 µm² | 31,9 mW |
+| opt30 | base | 30 ns · 33,3 MHz | 1,14 ns | 34,7 MHz | 0 · 0 | 2 | 7.620 (1,5 ns) | 140 | 46.826 (16.570) | 259.752 µm² | 42,6 mW |
+| sem_diodos | base | 30 ns · 33,3 MHz | 2,64 ns | 36,6 MHz | 0 · 0 | 19 | 3.139 (1,5 ns) | 111 | 30.947 (691) | 220.016 µm² | 42,0 mW |
+| **final** | **sign-off** | **30 ns · 33,3 MHz** | **0,09 ns** | **33,4 MHz** | **0 · 0** | 24 | **0** (1,5 ns) · 263 (0,75 ns) | 74 | 36.784 (3.686) | 245.867 µm² | 44,5 mW |
 
-- Die de 820 × 831 µm em todas as rodadas; utilização caiu de 39,7 % para 33,7 % na final;
-- Hold fechado em todos os corners (pior folga 0,28 ns);
+- **SDC "base"** = só clock e atrasos de I/O: clock ideal, sem derating nem incerteza, e o limite de slew da biblioteca (1,5 ns). Por isso a folga das três primeiras é otimista. **SDC "sign-off"** = restrições completas do OpenLane (`openlane/constraints/signoff.sdc`): clock propagado, derating de 5 %, incerteza de 0,25 ns, meta de slew de 0,75 ns;
+- Die de 820 × 831 µm em todas as rodadas; hold fechado em todos os corners;
 - **Fmax estimada** = 1000 / (período − folga no pior corner); é uma estimativa, não uma rodada fechada nessa frequência;
-- As violações de slew/cap restantes ficam no corner lento (`ss`, 100 °C, 1,60 V); no corner típico elas não existem. As 19 de antena têm razão máxima 2,87 (limite 1,0), em fios longos de met1/met3.
+- O que resta na final fica nos corners lentos (`ss`, 100 °C, 1,60 V): 263 pinos acima da meta de 0,75 ns (pior 1,42 ns), 74 de capacitância (excesso máximo 0,084 pF) e 24 de antena (pior razão 4,34 em met3). Ver KI-10 e KI-11.
 
 ---
 
@@ -341,7 +352,7 @@ Firmware autoral executando no RTL e na netlist gate-level; firmware oficial ain
 40 ns (25 MHz), DRC 0, LVS 0, timing fechado em todos os corners.
 
 **F8 — Otimização física** ✅ Concluída
-30 ns (33,3 MHz) com timing fechado; causa das violações de slew/cap encontrada (diodos heurísticos) e reduzida em 59 %.
+30 ns (33,3 MHz) com timing fechado sob SDC de sign-off completo; duas causas das violações de slew encontradas (diodos em massa e SDC incompleto): nenhum pino acima do limite da biblioteca.
 
 **F9 — Gate-level regression** ✅ Concluída
 Netlists pós-layout equivalentes ao modelo de referência.
@@ -414,8 +425,8 @@ firmware/
   linker/        linker script com o mapa de memória do SoC
   official/      ponto de entrada do firmware oficial (SG-05)
 openlane/
-  config/        config.json (40 ns) · config_opt30.json (30 ns) · config_final.json (30 ns · reparo multi-corner · sem diodos heurísticos)
-  constraints/   base.sdc (período lido da configuração)
+  config/        config.json (40 ns) · config_opt30.json (30 ns) · config_sem_diodos.json · config_final.json (30 ns · SDC de sign-off)
+  constraints/   base.sdc (clock e I/O) · signoff.sdc (restrições completas de sign-off)
 tools/
   iss/           modelo de referência (rv32_iss.py) e gerador de programas aleatórios
   mutation/      teste de mutação
@@ -429,7 +440,7 @@ notebooks/       00–03 + _common.py
 reports/         summary.json · RESUMO.md · regressão · mutação · gate-level · sweep físico
 docs/
   architecture/  visão da arquitetura (diagramas Mermaid)
-  governance/    DECISIONS (ADR-001–016) · SPEC_GAPS · KNOWN_ISSUES · STATUS · TEST_MATRIX
+  governance/    DECISIONS (ADR-001–017) · SPEC_GAPS · KNOWN_ISSUES · STATUS · TEST_MATRIX
   submission/    RELATORIO.md (relatório técnico, tópicos 1–6 do guia)
   evidence/      logs · waveforms · cobertura da ISA · métricas e layouts do OpenLane
   img/           imagens do README
@@ -449,7 +460,7 @@ pacote de entrega da competição.
 |---|---|
 | [Relatório técnico](docs/submission/RELATORIO.md) | visão geral, instruções, datapath, módulos, firmware, OpenLane |
 | [Registro mestre](versioning/REGISTRO_MESTRE.md) | cada requisito do guia ligado à evidência que o comprova |
-| [Decisões (ADRs)](docs/governance/DECISIONS.md) | 16 decisões de arquitetura e engenharia, incluindo os bugs corrigidos |
+| [Decisões (ADRs)](docs/governance/DECISIONS.md) | 17 decisões de arquitetura e engenharia, incluindo os bugs corrigidos |
 | [Lacunas do guia](docs/governance/SPEC_GAPS.md) | o que o guia não especifica e como cada ponto foi tratado |
 | [Problemas conhecidos](docs/governance/KNOWN_ISSUES.md) | limitações registradas, abertas e resolvidas |
 | [Matriz de testes](docs/governance/TEST_MATRIX.csv) | 47 instruções × testbench × status |

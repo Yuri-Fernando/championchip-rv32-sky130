@@ -34,8 +34,8 @@ PHASES = [
     ("F5", "Zmmul + Xicrc", "partial", "Zmmul 4/4; Xicrc bloqueada por especificação (SG-01)"),
     ("F6", "Firmware", "partial", "Firmware autoral PASS; oficial indisponível (SG-05)"),
     ("F7", "OpenLane baseline", "done", "GDSII com DRC 0, LVS 0, timing fechado"),
-    ("F8", "Otimização física", "done", "40 ns → 30 ns (33,3 MHz); diodos heurísticos removidos: slew −59 %, células −34 %; slew/cap residual no corner ss"),
-    ("F9", "Gate-level regression", "done", "Netlists das 3 rodadas equivalentes ao modelo de referência"),
+    ("F8", "Otimização física", "done", "30 ns (33,3 MHz) com SDC de sign-off completo: nenhum pino acima do limite de slew da biblioteca; antena e cap residuais"),
+    ("F9", "Gate-level regression", "done", "Netlists das 4 rodadas equivalentes ao modelo de referência"),
     ("F10", "Relatório / vídeo / submissão", "partial", "Relatório, dashboard, notebooks, slides e roteiro prontos; vídeo a gravar"),
 ]
 
@@ -58,6 +58,10 @@ def physical_runs() -> list[dict]:
         period = float(cfg.get("CLOCK_PERIOD", 0) or 0)
         wss = m.get("timing__setup__ws")
         label = "baseline" if d.name == "run_best" else d.name.replace("run_", "")
+        # SDC usado: signoff.sdc (completo, limite de transição 0,75 ns) ou base.sdc
+        # (só clock e I/O: vale o limite da biblioteca, 1,5 ns, e clock ideal)
+        sdc = str(cfg.get("PNR_SDC_FILE") or cfg.get("FALLBACK_SDC_FILE") or "").rsplit("/", 1)[-1]
+        full_sdc = sdc == "signoff.sdc"
         runs.append({
             "label": label,
             "dir": d.relative_to(ROOT).as_posix(),
@@ -75,6 +79,11 @@ def physical_runs() -> list[dict]:
             "antenna_violations": m.get("route__antenna_violation__count"),
             "max_slew_violations": m.get("design__max_slew_violation__count"),
             "max_cap_violations": m.get("design__max_cap_violation__count"),
+            "max_fanout_violations": m.get("design__max_fanout_violation__count"),
+            "sdc": sdc,
+            "sdc_complete": full_sdc,
+            "slew_limit_ns": float(cfg.get("MAX_TRANSITION_CONSTRAINT", 0.75)) if full_sdc else 1.5,
+            "antenna_diodes": m.get("design__instance__count__class:antenna_cell"),
             "core_area_um2": m.get("design__core__area"),
             "die_area_um2": m.get("design__die__area"),
             "die_w_um": float(m["design__die__bbox"].split()[2]) if m.get("design__die__bbox") else None,
@@ -86,8 +95,8 @@ def physical_runs() -> list[dict]:
             "wirelength_um": m.get("route__wirelength"),
             "config": {k: cfg[k] for k in cfg if k not in ("VERILOG_FILES", "VERILOG_INCLUDE_DIRS")},
         })
-    order = {"baseline": 0, "opt30": 1, "final": 2}  # ordem cronologica das rodadas
-    return sorted(runs, key=lambda r: (order.get(r["label"], 1.5), r["label"]))
+    order = {"baseline": 0, "opt30": 1, "sem_diodos": 2, "final": 3}  # ordem cronologica das rodadas
+    return sorted(runs, key=lambda r: (order.get(r["label"], 2.5), r["label"]))
 
 
 def spec_gaps() -> list[dict]:
@@ -150,9 +159,10 @@ def main() -> None:
     (out / "summary.json").write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
 
     with open(out / "physical_sweep.csv", "w", newline="", encoding="utf-8") as f:
-        cols = ["label", "clock_period_ns", "clock_mhz", "setup_worst_slack_ns", "fmax_mhz_worst_corner",
-                "drc_klayout", "drc_magic", "lvs_errors", "antenna_violations", "max_slew_violations",
-                "max_cap_violations", "core_area_um2", "stdcell_area_um2", "utilization", "power_total_w", "wirelength_um"]
+        cols = ["label", "sdc", "slew_limit_ns", "clock_period_ns", "clock_mhz", "setup_worst_slack_ns", "fmax_mhz_worst_corner",
+                "drc_klayout", "drc_magic", "lvs_errors", "antenna_violations", "antenna_diodes", "max_slew_violations",
+                "max_cap_violations", "max_fanout_violations", "instances", "core_area_um2", "stdcell_area_um2",
+                "utilization", "power_total_w", "wirelength_um"]
         w = csv.DictWriter(f, fieldnames=cols, extrasaction="ignore")
         w.writeheader()
         w.writerows(runs)
@@ -162,13 +172,15 @@ def main() -> None:
              f"- Regressao: **{summary['verification']['regression_pass']}/{len(regression)}** suites PASS",
              f"- Teste de mutacao: **{summary['verification']['mutation_killed']}/{len(mutation)}** mutantes detectados",
              f"- Gate-level: " + (", ".join(f"{r['teste']}={r['status']}" for r in gls) or "nao executado"), ""]
-    lines += ["| run | clock | folga setup (pior corner) | Fmax est. | DRC | LVS | antena | slew | cap | area std-cell | potencia |",
-              "|---|---|---|---|---|---|---|---|---|---|---|"]
+    lines += ["| run | SDC | clock | folga setup (pior corner) | Fmax est. | DRC | LVS | antena | slew (limite) | cap | area std-cell | potencia |",
+              "|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for r in runs:
-        lines.append(f"| {r['label']} | {r['clock_period_ns']:.0f} ns ({r['clock_mhz']} MHz) | {r['setup_worst_slack_ns']:.2f} ns | "
+        lines.append(f"| {r['label']} | {r['sdc']} | {r['clock_period_ns']:.0f} ns ({r['clock_mhz']} MHz) | {r['setup_worst_slack_ns']:.2f} ns | "
                      f"{r['fmax_mhz_worst_corner']} MHz | {r['drc_klayout']} | {r['lvs_errors']} | {r['antenna_violations']} | "
-                     f"{r['max_slew_violations']} | {r['max_cap_violations']} | {r['stdcell_area_um2']:.0f} um2 | "
+                     f"{r['max_slew_violations']} ({r['slew_limit_ns']} ns) | {r['max_cap_violations']} | {r['stdcell_area_um2']:.0f} um2 | "
                      f"{r['power_total_w'] * 1000:.1f} mW |")
+    lines += ["", "Rodadas com base.sdc usam clock ideal, sem derating/incerteza e o limite de slew da biblioteca (1,5 ns);",
+              "signoff.sdc tem as restricoes completas do OpenLane (limite 0,75 ns, clock propagado, derating 5 %). Ver ADR-017."]
     (out / "RESUMO.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
     print(f"reports/summary.json: ISA {isa_pass}/{len(matrix)}, {len(regression)} suites, {len(mutation)} mutantes, {len(runs)} runs fisicos")
 

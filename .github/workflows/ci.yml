@@ -16,7 +16,7 @@ jobs:
     env:
       CHAMPIONCHIP_NATIVE: "1"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Instalar toolchain (Icarus Verilog, Verilator, GCC RISC-V)
         run: |
@@ -35,7 +35,7 @@ jobs:
 
       - name: Publicar evidencias
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: evidencias-verificacao
           path: |

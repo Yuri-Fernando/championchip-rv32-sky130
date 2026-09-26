@@ -144,3 +144,30 @@ uma de cada vez:
 guia oficial da competição) movido para `desconsiderar/`, fora do git e do
 pacote de entrega. Dashboard passou a ser saída gerada (`make dashboard`).
 README reescrito no padrão do portfólio; licença MIT.
+
+## Sessão 5 — 25–26/09/2026 (noite): SDC de sign-off
+
+**Pedido:** corrigir o que ficou pendente (slew/cap, antena, aviso do CI).
+
+**Diagnóstico.** Mesmo sem os diodos em massa, 3.139 pinos passavam do limite
+de slew da biblioteca. Os relatórios de STA mostraram o limite de 1,5 ns (o da
+biblioteca), enquanto a configuração resolvida do OpenLane tinha
+`MAX_TRANSITION_CONSTRAINT = 0,75`. Motivo: essas variáveis só chegam ao
+OpenROAD pelo SDC, e o `base.sdc` do projeto só criava o clock e os atrasos de
+I/O. Também faltava `set_propagated_clock`: a análise pós-CTS usava clock
+ideal. Os nomes de todas as variáveis testadas foram conferidos no código do
+OpenLane 2.3.10 instalado antes de usar.
+
+**Experimentos (duas rodadas em paralelo por vez, 4 CPUs):**
+- A — SDC completo: 0 pinos acima de 1,5 ns; folga 1,08 ns; antena 58.
+- B — A + buffer em fios longos: violou setup (−0,09 ns). Descartada.
+- C — A + margem de reparo de 40 %: slew 260 (meta 0,75 ns), cap 55; folga 0,31 ns.
+- D — C + diodos só em redes > 400 µm: antena 24; folga 0,09 ns. **Escolhida.**
+
+**Limite encontrado:** no fluxo Classic, diodos e reparo de antena rodam
+depois do reparo de projeto; cada diodo é carga extra na rede. Por isso antena
+e cap/fanout disputam entre si. O próximo passo seria um `repair_design`
+depois do reparo de antena, o que exige um fluxo customizado.
+
+**Outros:** logs inchados por barras de progresso truncadas ("…"), corrigido no
+`clean_log.py`; CI atualizado para actions v7 (Node 24).

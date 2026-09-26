@@ -121,8 +121,8 @@ sign-extend de LB/LH não era testado (ADR-014).
 A netlist pós-layout do OpenLane (`rv32_core.nl.v`, células `sky130_fd_sc_hd`
 com modelos funcionais) substitui o RTL do núcleo dentro do mesmo SoC. O
 firmware e 10 programas aleatórios produzem resultado idêntico ao modelo de
-referência, **nas três netlists** (baseline, otimizada e final) — ver
-`docs/evidence/logs/gls_baseline.log`, `gls_opt30.log` e `gls_final.log` (ADR-015).
+referência, **nas quatro netlists** (baseline, otimizada, sem diodos e final) — ver
+`docs/evidence/logs/gls_baseline.log`, `gls_opt30.log`, `gls_sem_diodos.log` e `gls_final.log` (ADR-015).
 
 ## 5. Firmware
 
@@ -154,21 +154,29 @@ do Plano Mestre).
 
 **Resultados (fluxo completo, 9 corners de processo/temperatura/tensão):**
 
-| Métrica | Baseline — 40 ns | Otimizada — 30 ns | **Final — 30 ns** |
-|---------|------------------|-------------------|-------------------|
-| Frequência | 25,0 MHz | 33,3 MHz | **33,3 MHz** |
-| Folga de setup, pior corner (`max_ss_100C_1v60`) | 11,57 ns | 1,14 ns | **2,64 ns** |
-| WNS / TNS (setup e hold, todos os corners) | 0 / 0 | 0 / 0 | 0 / 0 |
-| Folga de hold, pior corner | 0,282 ns | 0,283 ns | 0,281 ns |
-| DRC KLayout / Magic | **0 / 0** | **0 / 0** | **0 / 0** |
-| LVS | **0** | **0** | **0** |
-| Antena | 2 | 2 | 19 |
-| Max slew / max cap (corners lentos) | 7.486 / 143 | 7.620 / 140 | **3.139 / 111** |
-| Células (diodos de antena) | 46.827 (16.570) | 46.826 (16.570) | **30.947 (691)** |
-| Área de standard cells | 259.760 µm² | 259.752 µm² | **220.016 µm²** |
-| Área do core · do die | 653.656 µm² · 681.917 µm² (820,4 × 831,2 µm) | idem | idem |
-| Utilização | 39,7 % | 39,7 % | 33,7 % |
-| Potência total estimada | 31,9 mW | 42,6 mW | 42,0 mW |
+| Métrica | Baseline — 40 ns | Otimizada — 30 ns | Sem diodos — 30 ns | **Final — 30 ns** |
+|---------|------------------|-------------------|--------------------|-------------------|
+| Restrições (SDC) | só clock e I/O | só clock e I/O | só clock e I/O | **sign-off completo** |
+| Frequência | 25,0 MHz | 33,3 MHz | 33,3 MHz | **33,3 MHz** |
+| Folga de setup, pior corner (`max_ss_100C_1v60`) | 11,57 ns | 1,14 ns | 2,64 ns | **0,09 ns** |
+| WNS / TNS (setup e hold, todos os corners) | 0 / 0 | 0 / 0 | 0 / 0 | 0 / 0 |
+| Folga de hold, pior corner | 0,282 ns | 0,283 ns | 0,281 ns | 0,115 ns |
+| DRC KLayout / Magic | **0 / 0** | **0 / 0** | **0 / 0** | **0 / 0** |
+| LVS | **0** | **0** | **0** | **0** |
+| Antena | 2 | 2 | 19 | 24 |
+| Pinos acima do limite de slew da biblioteca (1,5 ns) | 7.486 | 7.620 | 3.139 | **0** |
+| Pinos acima da meta de slew de 0,75 ns | — | — | — | 263 |
+| Max cap | 143 | 140 | 111 | 74 |
+| Células (diodos de antena) | 46.827 (16.568) | 46.826 (16.570) | 30.947 (691) | 36.784 (3.686) |
+| Área de standard cells | 259.760 µm² | 259.752 µm² | 220.016 µm² | 245.867 µm² |
+| Área do core · do die | 653.656 µm² · 681.917 µm² (820,4 × 831,2 µm) | idem | idem | idem |
+| Utilização | 39,7 % | 39,7 % | 33,7 % | 37,6 % |
+| Potência total estimada | 31,9 mW | 42,6 mW | 42,0 mW | 44,5 mW |
+
+As três primeiras rodadas usaram `base.sdc` (clock ideal, sem derating nem
+incerteza), então as folgas delas são otimistas e não se comparam diretamente
+com a final, que usa `signoff.sdc` (clock propagado, derating de 5 %, incerteza
+de 0,25 ns).
 
 **Rodada otimizada (F8).** A folga do baseline indicava um caminho crítico de
 ~28,4 ns no pior corner (Fmax estimada ≈ 35 MHz). A segunda rodada
@@ -178,23 +186,32 @@ slew/capacitância depois do roteamento global (`RUN_POST_GRT_DESIGN_REPAIR`,
 fechou em todos os corners com 1,14 ns de folga. A potência cresce de forma
 proporcional à frequência, como esperado para potência dinâmica.
 
-**Rodada final — causa das violações de slew/cap.** O reparo pós-roteamento
-não reduziu as violações de max slew / max cap dos corners lentos, nem o
-reparo estendido aos 9 corners (`RSZ_CORNERS`). A causa estava num passo
-posterior: a inserção heurística de diodos de antena, ligada na configuração
-inicial, roda depois do reparo e colocava 16.570 diodos (35 % das células).
-Com ela desligada e o reparo de antena direcionado reforçado
-(`config_final.json`, ADR-016): slew −59 %, células −34 %, área −15 %, folga de
-setup de 1,14 para 2,64 ns (Fmax estimada 36,6 MHz), DRC 0 e LVS 0. A netlist
-final passou na simulação gate-level (`gls_final.log`).
+**Rodada sem diodos — primeira causa das violações de slew.** O reparo
+pós-roteamento não reduziu as violações dos corners lentos, nem o reparo
+estendido aos 9 corners (`RSZ_CORNERS`). A causa estava num passo posterior:
+a inserção heurística de diodos de antena, ligada na configuração inicial,
+roda depois do reparo e colocava 16.570 diodos (35 % das células). Desligada
+(`config_sem_diodos.json`, ADR-016): slew −59 %, células −34 %, área −15 %.
 
-**Pendências.** Restam 3.139 / 111 violações de slew/cap, todas nos corners
-`ss` (nenhuma no típico; setup e hold fecham nos 9 corners), e 19 violações
-de antena (pior razão 2,87) — KI-10 e KI-11 em
+**Rodada final — segunda causa: SDC incompleto.** Ainda sobravam 3.139 pinos
+acima do limite de slew da biblioteca. O `base.sdc` não tinha
+`set_max_transition` nem `set_max_fanout`, então o reparo mirava 1,5 ns com
+parasitas estimados; também não tinha `set_propagated_clock`, incerteza nem
+derating. `openlane/constraints/signoff.sdc` traz as restrições completas do
+SDC padrão do OpenLane. Quatro variantes foram comparadas (ADR-017); a final
+soma margem de reparo de 40 % e diodos só em redes acima de 400 µm. Resultado:
+**nenhum pino acima do limite da biblioteca**, timing fechado nos 9 corners
+com restrições realistas (folga 0,09 ns no pior corner), DRC 0 e LVS 0. A
+netlist final passou na simulação gate-level (`gls_final.log`).
+
+**Pendências.** Nos corners `ss`: 263 pinos acima da meta de 0,75 ns (pior
+1,42 ns), 74 violações de capacitância (excesso máximo 0,084 pF) e 24 de
+antena (pior razão 4,34). Vêm da ordem do fluxo: diodos e reparo de antena
+rodam depois do reparo de projeto — KI-10 e KI-11 em
 `docs/governance/KNOWN_ISSUES.md`, com os próximos passos.
 
 Artefatos em [`docs/evidence/openlane/`](../evidence/openlane/) (`run_best/` =
-baseline, `run_opt30/` = otimizada, `run_final/` = final): `rv32_core.gds` (GDSII), `rv32_core.nl.v`
+baseline, `run_opt30/` = otimizada, `run_sem_diodos/`, `run_final/` = final): `rv32_core.gds` (GDSII), `rv32_core.nl.v`
 (netlist gate-level), `metrics.json`, `config.json` e imagem do layout.
 Tabela consolidada: `reports/physical_sweep.csv`.
 

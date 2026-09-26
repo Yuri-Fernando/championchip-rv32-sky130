@@ -178,11 +178,16 @@ RTL → síntese (Yosys) → floorplan → posicionamento → árvore de clock �
 Alvo: `rv32_core` (o núcleo). As memórias de 4 MB / 8 kB do guia dependem da
 macro física oficial (SPEC_GAPS SG-02) e não são sintetizadas em flip-flops.
 
-Três rodadas:
+Quatro rodadas:
 - **baseline** — 40 ns (25 MHz), primeira implementação completa;
 - **opt30** — 30 ns (33,3 MHz), com reparo de slew/capacitância depois do roteamento global;
-- **final** — 30 ns sem a inserção heurística de diodos, que colocava 16.570 diodos
-  depois do reparo e era a causa das violações de slew no corner lento (ADR-016).
+- **sem_diodos** — 30 ns sem a inserção heurística de diodos, que colocava 16.570 diodos
+  depois do reparo (primeira causa das violações de slew, ADR-016);
+- **final** — 30 ns com o SDC de sign-off completo (`signoff.sdc`): meta de slew de
+  0,75 ns, clock propagado, derating de 5 % (segunda causa, ADR-017).
+
+As três primeiras usam `base.sdc` (clock ideal, sem derating), então as folgas delas
+são otimistas; a coluna `sdc` da tabela abaixo mostra qual SDC cada rodada usou.
 
 > Cada rodada leva ~50 min e baixa o PDK SKY130 na primeira vez. Mude
 > `RODAR_OPENLANE` para `True` para refazer."""),
@@ -190,13 +195,14 @@ Três rodadas:
     ("code", """if RODAR_OPENLANE:
     run("bash scripts/run_openlane.sh openlane/config/config.json baseline", tail=15)
     run("bash scripts/run_openlane.sh openlane/config/config_opt30.json opt30", tail=15)
+    run("bash scripts/run_openlane.sh openlane/config/config_sem_diodos.json sem_diodos", tail=15)
     run("bash scripts/run_openlane.sh openlane/config/config_final.json final", tail=15)
 print((ROOT / "openlane/config/config_final.json").read_text())"""),
     ("md", "## Métricas das rodadas"),
     ("code", """S = summary()
-cols = ["label", "clock_period_ns", "clock_mhz", "setup_worst_slack_ns", "fmax_mhz_worst_corner", "hold_worst_slack_ns",
+cols = ["label", "sdc", "slew_limit_ns", "clock_period_ns", "clock_mhz", "setup_worst_slack_ns", "fmax_mhz_worst_corner", "hold_worst_slack_ns",
         "drc_klayout", "drc_magic", "lvs_errors", "antenna_violations", "max_slew_violations", "max_cap_violations",
-        "instances", "stdcell_area_um2", "die_area_um2", "utilization", "power_total_w"]
+        "max_fanout_violations", "instances", "antenna_diodes", "stdcell_area_um2", "die_area_um2", "utilization", "power_total_w"]
 pd.DataFrame(S["physical"])[cols].set_index("label").T"""),
     ("md", """## Folga de setup por corner
 
@@ -220,8 +226,8 @@ plt.tight_layout(); plt.show()"""),
     ("code", 'display(Image(filename=str(ROOT / "docs/evidence/openlane/run_final/rv32_core_layout.png"), width=620))'),
     ("md", """## Gate-level: a netlist pós-layout é equivalente?
 
-A netlist final gerada pelo OpenLane (~31 mil células `sky130_fd_sc_hd`) substitui
+A netlist final gerada pelo OpenLane (~37 mil células `sky130_fd_sc_hd`) substitui
 o RTL dentro do mesmo SoC e roda o firmware e os programas aleatórios. As netlists
-baseline e opt30 passaram no mesmo teste (`docs/evidence/logs/gls_*.log`)."""),
+baseline, opt30 e sem_diodos passaram no mesmo teste (`docs/evidence/logs/gls_*.log`)."""),
     ("code", 'run("bash scripts/run_gls.sh docs/evidence/openlane/run_final/rv32_core.nl.v", tail=8)\npd.read_csv(ROOT / "reports/gls_summary.csv")'),
 ])

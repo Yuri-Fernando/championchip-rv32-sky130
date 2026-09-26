@@ -242,3 +242,49 @@ todos os corners). DRC 0 e LVS 0 nas três.
 **Registro:** v1 e v3 arquivadas localmente (`final_com_diodos.tar.gz`,
 `final_v3_20260925_183159.tar.gz`), v2 em `run_final_v2_sem_diodos/`; a v3 é
 a `docs/evidence/openlane/run_final`.
+
+## ADR-017 — SDC de sign-off completo e rodada final (reparo com margem + diodos só em redes longas)
+
+**Contexto:** mesmo sem os diodos heurísticos (ADR-016), a rodada "sem_diodos"
+tinha 3.139 pinos acima do limite de slew da biblioteca (1,5 ns) no corner
+lento. O `base.sdc` do projeto só criava o clock e os atrasos de I/O. Sem
+`set_max_transition`/`set_max_fanout`, o reparo do OpenROAD mirava o limite
+da biblioteca a partir de parasitas estimados; com os parasitas máximos
+extraídos depois do roteamento, o slew estourava. Faltavam também
+`set_propagated_clock` (a STA pós-CTS usava clock ideal, sem skew), incerteza
+de clock, derating, célula de entrada e carga de saída — tudo que o SDC padrão
+do OpenLane define a partir de `MAX_TRANSITION_CONSTRAINT` (0,75 ns),
+`MAX_FANOUT_CONSTRAINT` (10), `CLOCK_UNCERTAINTY_CONSTRAINT` (0,25 ns),
+`TIME_DERATING_CONSTRAINT` (5 %) e `OUTPUT_CAP_LOAD` (33,4 fF).
+
+**Decisão:** `openlane/constraints/signoff.sdc` (conteúdo do SDC padrão do
+OpenLane, especializado para `clk_i`) como `PNR_SDC_FILE` e
+`SIGNOFF_SDC_FILE` da rodada final. `base.sdc` fica intacto para reproduzir as
+rodadas antigas (`config.json`, `config_opt30.json`, `config_sem_diodos.json`).
+Quatro variantes testadas (todas a 30 ns, 9 corners, DRC 0 e LVS 0):
+
+| Variante | Mudança sobre a anterior | Folga setup | Slew (limite 0,75 ns) | Pinos > 1,5 ns | Cap | Fanout | Antena | Células |
+|---|---|---|---|---|---|---|---|---|
+| sem_diodos | (ADR-016, `base.sdc`) | 2,64 ns* | — | 3.139 | 111 | — | 19 | 30.947 |
+| A | `signoff.sdc` | 1,08 ns | 581 | **0** | 75 | 187 | 58 | 33.545 |
+| B | A + buffer em fios > 400 µm | **−0,09 ns** ✗ | 437 | 0 | 1 | 111 | 63 | 33.920 |
+| C | A + margem de reparo 40 % (slew/cap, pré e pós-GRT) | 0,31 ns | 260 | 0 | 55 | 185 | 60 | 34.123 |
+| **D (final)** | C + diodos heurísticos só em redes > 400 µm | 0,09 ns | 263 | **0** | 74 | 408 | **24** | 36.784 |
+
+\* medida com clock ideal, sem derating nem incerteza — não comparável.
+
+**Escolha: D.** Com restrições realistas, fecha timing nos 9 corners, não tem
+nenhum pino acima do limite de slew da biblioteca e tem a menor contagem de
+antena entre as rodadas com o SDC completo (24, contra 58–63). B foi
+descartada por violar setup.
+
+**Limitações conhecidas (KI-10/KI-11):** 263 pinos acima da meta de 0,75 ns
+(só corners `ss`; pior 1,42 ns, abaixo de 1,5 ns), 74 violações de
+capacitância (excesso máximo 0,084 pF), 408 de fanout e 24 de antena (pior
+razão 4,34, em met3). As de cap e fanout vêm de um limite de ordem do fluxo
+Classic: a inserção de diodos e o reparo de antena rodam *depois* do reparo
+de projeto e cada diodo é uma carga a mais na rede. As 50 mil linhas repetidas
+nos logs vinham de barras de progresso truncadas com "…" (corrigido em
+`tools/clean_log.py`).
+**Registro:** A, B, C e D arquivadas em `desconsiderar/openlane_runs/`
+(`signoff_*.tar.gz` e as configs); D é `docs/evidence/openlane/run_final`.

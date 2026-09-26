@@ -13,6 +13,8 @@ import sys
 ANSI = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]|\x1b\]8;[^\x1b\x07]*(?:\x1b\\|\x07)")
 PROGRESS = re.compile(r"^Classic - Stage \d+ - .*[━╺╸]")
 ELAPSED = re.compile(r"\d+/\d+ \d+:\d{2}:\d{2}")  # "73/78 0:51:30" no fim da barra
+# barra truncada pelo terminal quando o nome da etapa é longo: "Classic - Stage 36 - ... …"
+TRUNCATED = re.compile(r"^(Classic - Stage \d+ - .*?)\s*…$")
 
 
 def clean(text: str) -> str:
@@ -21,6 +23,12 @@ def clean(text: str) -> str:
         for piece in raw.split("\r"):
             line = ANSI.sub("", piece).rstrip()
             if not line:
+                continue
+            t = TRUNCATED.match(line)
+            if t:
+                if t.group(1) != last_stage:
+                    out.append(t.group(1))
+                    last_stage = t.group(1)
                 continue
             while PROGRESS.match(line):
                 stage = re.split(r"[━╺╸]", line)[0].strip()

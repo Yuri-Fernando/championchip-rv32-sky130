@@ -1,4 +1,4 @@
-netlist: docs/evidence/openlane/run_final/rv32_core.nl.v (5.4M)
+netlist: docs/evidence/openlane/run_final/rv32_core.nl.v (5.0M)
 ==== GL 1. firmware de smoke-test sobre a netlist ====
 PASS  gl/firmware
 ==== GL 2. diferencial randomizado sobre a netlist (10 programas) ====

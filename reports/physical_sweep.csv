@@ -1,4 +1,5 @@
-label,clock_period_ns,clock_mhz,setup_worst_slack_ns,fmax_mhz_worst_corner,drc_klayout,drc_magic,lvs_errors,antenna_violations,max_slew_violations,max_cap_violations,core_area_um2,stdcell_area_um2,utilization,power_total_w,wirelength_um
-baseline,40.0,25.0,11.568808460876683,35.2,0,0,0,2,7486,143,653656,259760,0.397396,0.03192472830414772,999105
-opt30,30.0,33.3,1.1448264882345778,34.7,0,0,0,2,7620,140,653656,259752,0.397383,0.04264897108078003,998369
-final,30.0,33.3,2.64165941043381,36.6,0,0,0,19,3139,111,653656,220016,0.336593,0.04200536757707596,970318
+label,sdc,slew_limit_ns,clock_period_ns,clock_mhz,setup_worst_slack_ns,fmax_mhz_worst_corner,drc_klayout,drc_magic,lvs_errors,antenna_violations,antenna_diodes,max_slew_violations,max_cap_violations,max_fanout_violations,instances,core_area_um2,stdcell_area_um2,utilization,power_total_w,wirelength_um
+baseline,base.sdc,1.5,40.0,25.0,11.568808460876683,35.2,0,0,0,2,16568,7486,143,0,46827,653656,259760,0.397396,0.03192472830414772,999105
+opt30,base.sdc,1.5,30.0,33.3,1.1448264882345778,34.7,0,0,0,2,16570,7620,140,0,46826,653656,259752,0.397383,0.04264897108078003,998369
+sem_diodos,base.sdc,1.5,30.0,33.3,2.64165941043381,36.6,0,0,0,19,691,3139,111,0,30947,653656,220016,0.336593,0.04200536757707596,970318
+final,signoff.sdc,0.75,30.0,33.3,0.08948930738623627,33.4,0,0,0,24,3686,263,74,408,36784,653656,245867,0.376142,0.04449481517076492,1148507
